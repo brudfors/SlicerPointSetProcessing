@@ -34,6 +34,7 @@
 
 #include "vtkSlicerPointSetProcessingCppModuleLogicExport.h"
 
+class vtkMRMLModelNode;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_POINTSETPROCESSINGCPP_MODULE_LOGIC_EXPORT vtkSlicerPointSetProcessingCppLogic :
@@ -44,6 +45,8 @@ public:
   static vtkSlicerPointSetProcessingCppLogic *New();
   vtkTypeMacro(vtkSlicerPointSetProcessingCppLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  void PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output);
 
 protected:
   vtkSlicerPointSetProcessingCppLogic();

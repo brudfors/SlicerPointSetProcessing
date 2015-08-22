@@ -19,6 +19,7 @@
 #include "vtkSlicerPointSetProcessingCppLogic.h"
 
 // MRML includes
+#include <vtkMRMLModelNode.h>
 #include <vtkMRMLScene.h>
 
 // VTK includes
@@ -79,5 +80,11 @@ void vtkSlicerPointSetProcessingCppLogic
 //---------------------------------------------------------------------------
 void vtkSlicerPointSetProcessingCppLogic
 ::OnMRMLSceneNodeRemoved(vtkMRMLNode* vtkNotUsed(node))
+{
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerPointSetProcessingCppLogic
+::PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output)
 {
 }
