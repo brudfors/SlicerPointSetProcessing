@@ -12,7 +12,7 @@ find_library(POINTSETPROCESSING_LIBRARY PointSetProcessing
           PATHS "H:/bin/PointSetProcessing/R/Release"
           DOC "Path to the PointSetProcessing library." )  
 find_path(POINTSETPROCESSING_INCLUDE_DIR vtkPointSetNormalEstimation.h
-          PATHS "H:/src/PointSetProcessing"
+          PATHS "H:/src/VTK-filters/PointSetProcessing"
           DOC "Path to PointSetProcessing include directory." )                        
           
 if (NOT POINTSETPROCESSING_LIBRARY)
@@ -26,7 +26,7 @@ find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
           PATHS "H:/bin/PoissonReconstruction/R"
           DOC "Path to PoissonReconstruction binary directory." )
 find_path(POISSONRECONSTRUCTION_INCLUDE_DIR vtkPoissonReconstruction.h
-          PATHS "H:/src/PoissonReconstruction/source"
+          PATHS "H:/src/VTK-filters/PoissonReconstruction/source"
           DOC "Path to PoissonReconstruction include directory." )
 find_library(POISSONRECONSTRUCTION_LIBRARY vtkPoissonReconstruction
           PATHS "H:/bin/PoissonReconstruction/R/lib/Release"
