@@ -108,4 +108,6 @@ void vtkSlicerPointSetProcessingCppLogic
     poissonFilter->SetDepth(depth);
     poissonFilter->SetInputConnection(normalOrientationFilter->GetOutputPort());
     poissonFilter->Update();	
+
+	vtkPolyData* outputPolyData = poissonFilter->GetOutput();
 }
