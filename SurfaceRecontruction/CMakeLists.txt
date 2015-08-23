@@ -1,3 +1,11 @@
+cmake_minimum_required (VERSION 2.8.11)
+project (SurfaceRecontruction)
+
+find_package (VTK REQUIRED)
+if (VTK_FOUND)
+  include (${VTK_USE_FILE})
+endif (VTK_FOUND)
+
 # PointSetProcessing
 find_path(PointSetProcessing_INCLUDE_DIR vtkPointSetNormalEstimation.h
           PATHS "H:/src/PointSetProcessing"
@@ -31,7 +39,7 @@ elseif (NOT PoissonReconstruction_INCLUDE_DIR)
   message( FATAL_ERROR "PoissonReconstruction include directory not found." )
 endif()
 
-add_executable(PoissonSurfaceRecontruction main.cxx )
+add_executable(SurfaceRecontruction main.cxx )
 
 target_include_directories(PoissonSurfaceRecontruction PUBLIC
   "${PointSetProcessing_INCLUDE_DIR}"
@@ -44,3 +52,5 @@ target_link_libraries(PoissonSurfaceRecontruction
   "${PointSetProcessing_LIBRARY}"
   "${PoissonReconstruction_LIBRARY}"
 )
+
+add_subdirectory (Data)

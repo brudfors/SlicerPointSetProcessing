@@ -30,6 +30,10 @@
 // STD includes
 #include <cassert>
 
+#include <vtkPointSetNormalEstimation.h>
+#include <vtkPointSetNormalOrientation.h>
+#include <vtkPoissonReconstruction.h>
+
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerPointSetProcessingCppLogic);
 
@@ -85,6 +89,23 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 void vtkSlicerPointSetProcessingCppLogic
-::PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output)
+::PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int kNearestNeighbors, int depth, unsigned int graphType)
 {
+	vtkPolyData* inputPolyData = input->GetPolyData();
+	
+	// vtkPointSetNormalEstimation
+    vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
+    normalEstimation->SetInputData(inputPolyData);
+
+	// vtkPointSetNormalOrientation
+    vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
+	normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort());  
+	normalOrientationFilter->SetGraphFilterType(graphType);
+    normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+
+	// vtkPoissonReconstruction
+    vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
+    poissonFilter->SetDepth(depth);
+    poissonFilter->SetInputConnection(normalOrientationFilter->GetOutputPort());
+    poissonFilter->Update();	
 }

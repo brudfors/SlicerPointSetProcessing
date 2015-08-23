@@ -22,6 +22,9 @@ elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
 endif()
 
 # PoissonReconstruction
+find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
+          PATHS "H:/bin/PoissonReconstruction/R"
+          DOC "Path to PoissonReconstruction binary directory." )
 find_path(POISSONRECONSTRUCTION_INCLUDE_DIR vtkPoissonReconstruction.h
           PATHS "H:/src/PoissonReconstruction/source"
           DOC "Path to PoissonReconstruction include directory." )
@@ -31,6 +34,8 @@ find_library(POISSONRECONSTRUCTION_LIBRARY vtkPoissonReconstruction
           
 if (NOT POISSONRECONSTRUCTION_LIBRARY)
   message( FATAL_ERROR "PoissonReconstruction library not found." )
+elseif (NOT POISSONRECONSTRUCTION_BINARY_DIR)
+  message( FATAL_ERROR "PoissonReconstruction binary directory not found." )
 elseif (NOT POISSONRECONSTRUCTION_INCLUDE_DIR)
   message( FATAL_ERROR "PoissonReconstruction include directory not found." )
 endif()
@@ -38,6 +43,7 @@ endif()
 set(${KIT}_INCLUDE_DIRECTORIES
   "${POINTSETPROCESSING_INCLUDE_DIR}"
   "${POISSONRECONSTRUCTION_INCLUDE_DIR}"
+  "${POISSONRECONSTRUCTION_BINARY_DIR}"
   )
 
 set(${KIT}_SRCS
