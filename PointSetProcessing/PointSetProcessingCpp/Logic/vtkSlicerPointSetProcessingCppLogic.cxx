@@ -99,14 +99,14 @@ void vtkSlicerPointSetProcessingCppLogic
 
 	// vtkPointSetNormalOrientation
     vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
-	normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort());  
-	normalOrientationFilter->SetGraphFilterType(graphType);
-    normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+	//normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort());  
+	//normalOrientationFilter->SetGraphFilterType(graphType);
+ //   normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
 
 	// vtkPoissonReconstruction
     vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
     poissonFilter->SetDepth(depth);
-    poissonFilter->SetInputConnection(normalOrientationFilter->GetOutputPort());
+    poissonFilter->SetInputConnection(normalEstimation->GetOutputPort());
     poissonFilter->Update();	
 
 	vtkPolyData* outputPolyData = poissonFilter->GetOutput();
