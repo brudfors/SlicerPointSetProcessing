@@ -3,6 +3,7 @@ import unittest
 from __main__ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 
+############################################################ PointSetProcessingPy 
 class PointSetProcessingPy(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
@@ -18,6 +19,7 @@ class PointSetProcessingPy(ScriptedLoadableModule):
     and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """ # replace with organization, grant and thanks.
 
+############################################################ PointSetProcessingPyWidget 
 class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -110,6 +112,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
       logic.apply(self.inputSelector.currentNode(), self.knnSlider.value, self.depthSlider.value, self.graphTypeComboBox.currentText, self.runtimeLabel)
       self.applyButton.checked = False   
 
+############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
   def apply(self, inputModelNode, kNearestNeighbors, depth, graphTypeText, runtimeLabel = None):
@@ -132,3 +135,25 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     runtime = slicer.modules.pointsetprocessingcpp.logic().PointSetProcessingConnector(inputModelNode, outputModelNode, int(kNearestNeighbors), int(depth), graphType)
     if runtimeLabel:
       runtimeLabel.setText('%.2f' % runtime + ' s.')
+    return True
+    
+############################################################ PointSetProcessingPyTest    
+class PointSetProcessingPyTest(ScriptedLoadableModuleTest):
+
+  def setUp(self):
+    slicer.mrmlScene.Clear(0)
+    layoutManager = slicer.app.layoutManager()
+    layoutManager.setLayout(4)
+    
+  def runTest(self):
+    self.setUp()
+    self.test_Poisson()
+
+  def test_Poisson(self):
+    self.delayDisplay("Testing Poisson Reconstruction")
+    pointSetProcessingPyModuleDirectoryPath = slicer.modules.pointsetprocessingpy.path.replace("PointSetProcessingPy.py", "")
+    slicer.util.loadModel(pointSetProcessingPyModuleDirectoryPath + '../Data/SpherePoints.vtp', 'SpherePoints')
+    inputModelNode = slicer.util.getNode('SpherePoints')
+    logic = PointSetProcessingPyLogic()
+    self.assertTrue(logic.apply(inputModelNode, 3, 10,'KNN'))        
+    self.delayDisplay('Testing Poisson Reconstruction passed!')    
