@@ -64,6 +64,27 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.graphTypeComboBox.addItem('Riemann')        
     parametersOutputFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
     
+        # Runtime
+    self.runtimeGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.runtimeGroupBox.setTitle("Runtime")
+    runtimeFormLayout = qt.QFormLayout(self.runtimeGroupBox)
+    poissonFormLayout.addRow(self.runtimeGroupBox)
+    
+    self.runtimeLabel = qt.QLabel()
+    self.runtimeLabel.setText("... s.")
+    self.runtimeLabel.setWordWrap(True)
+    self.runtimeLabel.setStyleSheet("QLabel { background-color : black; \
+                                           color : #66FF00; \
+                                           height : 60px; \
+                                           border-style: outset; \
+                                           border-width: 5px; \
+                                           border-radius: 10px; \
+                                           font: bold 14px; \
+                                           padding: 0px;\
+                                           font-family : SimSun; \
+                                           qproperty-alignment: AlignCenter}")
+    runtimeFormLayout.addRow(self.runtimeLabel)
+    
     self.applyButton = qt.QPushButton("Apply")
     self.applyButton.toolTip = "Run the algorithm."
     self.applyButton.enabled = False
@@ -86,12 +107,12 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def onApplyButton(self):
     if self.applyButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.apply(self.inputSelector.currentNode(), self.knnSlider.value, self.depthSlider.value, self.graphTypeComboBox.currentText)
+      logic.apply(self.inputSelector.currentNode(), self.knnSlider.value, self.depthSlider.value, self.graphTypeComboBox.currentText, self.runtimeLabel)
       self.applyButton.checked = False   
 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def apply(self, inputModelNode, kNearestNeighbors, depth, graphTypeText):
+  def apply(self, inputModelNode, kNearestNeighbors, depth, graphTypeText, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
     if not outputModelNode:
       scene = slicer.mrmlScene
@@ -108,4 +129,6 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
       graphType = 0
     elif graphTypeText == 'KNN':
       graphType = 1
-    slicer.modules.pointsetprocessingcpp.logic().PointSetProcessingConnector(inputModelNode, outputModelNode, int(kNearestNeighbors), int(depth), graphType)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().PointSetProcessingConnector(inputModelNode, outputModelNode, int(kNearestNeighbors), int(depth), graphType)
+    if runtimeLabel:
+      runtimeLabel.setText('%.2f' % runtime + ' s.')

@@ -26,6 +26,7 @@
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkTimerLog.h>
 
 // STD includes
 #include <cassert>
@@ -88,7 +89,7 @@ void vtkSlicerPointSetProcessingCppLogic
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerPointSetProcessingCppLogic
+float vtkSlicerPointSetProcessingCppLogic
 ::PointSetProcessingConnector(vtkMRMLModelNode* input, 
                               vtkMRMLModelNode* output,
                               int kNearestNeighbors, 
@@ -96,6 +97,9 @@ void vtkSlicerPointSetProcessingCppLogic
                               unsigned int graphType)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::PointSetProcessingConnector");
+
+  vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+  timer->StartTimer();
 
 	vtkPolyData* inputPolyData = input->GetPolyData();
 	
@@ -117,7 +121,7 @@ void vtkSlicerPointSetProcessingCppLogic
   else
   {
     vtkWarningMacro("Invalid graphType! Got ' + graphType + ' should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
-    return;
+    return 0;
   }
   normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
 
@@ -128,4 +132,8 @@ void vtkSlicerPointSetProcessingCppLogic
   poissonFilter->Update();	
 
   output->SetAndObservePolyData(poissonFilter->GetOutput());
+
+  timer->StopTimer();
+  float runtime = timer->GetElapsedTime();
+  return runtime;
 }
