@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.11)
-project (SurfaceRecontruction)
+project (TestSurfaceRecontruction)
 
 find_package (VTK REQUIRED)
 if (VTK_FOUND)
@@ -14,12 +14,6 @@ find_path(POINTSETPROCESSING_INCLUDE_DIR vtkPointSetNormalEstimation.h
           PATHS "H:/src/VTK-filters/PointSetProcessing"
           DOC "Path to PointSetProcessing include directory." )                        
           
-if (NOT POINTSETPROCESSING_LIBRARY)
-  message( FATAL_ERROR "PointSetProcessing library not found." )
-elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
-  message( FATAL_ERROR "PointSetProcessing include directory not found." )
-endif()
-
 # PoissonReconstruction
 find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
           PATHS "H:/bin/PoissonReconstruction/R"
@@ -31,7 +25,11 @@ find_library(POISSONRECONSTRUCTION_LIBRARY vtkPoissonReconstruction
           PATHS "H:/bin/PoissonReconstruction/R/lib/Release"
           DOC "Path to the PoissonReconstruction library." )
           
-if (NOT POISSONRECONSTRUCTION_LIBRARY)
+if (NOT POINTSETPROCESSING_LIBRARY)
+  message( FATAL_ERROR "PointSetProcessing library not found." )
+elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
+  message( FATAL_ERROR "PointSetProcessing include directory not found." )          
+elseif (NOT POISSONRECONSTRUCTION_LIBRARY)
   message( FATAL_ERROR "PoissonReconstruction library not found." )
 elseif (NOT POISSONRECONSTRUCTION_BINARY_DIR)
   message( FATAL_ERROR "PoissonReconstruction binary directory not found." )
@@ -39,15 +37,23 @@ elseif (NOT POISSONRECONSTRUCTION_INCLUDE_DIR)
   message( FATAL_ERROR "PoissonReconstruction include directory not found." )
 endif()
 
-add_executable(SurfaceRecontruction main.cxx )
+add_executable(TestSurfaceRecontruction main.cxx )
 
-target_include_directories(SurfaceRecontruction PUBLIC
+message("----------------")
+message("${POINTSETPROCESSING_INCLUDE_DIR}")
+message("${POISSONRECONSTRUCTION_INCLUDE_DIR}")
+message("${POISSONRECONSTRUCTION_BINARY_DIR}")
+message("${POINTSETPROCESSING_LIBRARY}")
+message("${POISSONRECONSTRUCTION_LIBRARY}")
+message("----------------")
+
+target_include_directories(TestSurfaceRecontruction PUBLIC
   "${POINTSETPROCESSING_INCLUDE_DIR}"
   "${POISSONRECONSTRUCTION_INCLUDE_DIR}"
   "${POISSONRECONSTRUCTION_BINARY_DIR}"
 )
 
-target_link_libraries(SurfaceRecontruction 
+target_link_libraries(TestSurfaceRecontruction 
   "${VTK_LIBRARIES}"
   "${POINTSETPROCESSING_LIBRARY}"
   "${POISSONRECONSTRUCTION_LIBRARY}"

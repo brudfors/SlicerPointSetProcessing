@@ -11,7 +11,6 @@
 #include "vtkPoissonReconstruction.h"
 #include "vtkPointSetNormalOrientation.h"
 
-// Reads a CSV file containing x,y,z coordinates on each row delimited by a ','
 vtkSmartPointer<vtkPolyData> GetPointsFromCSV(const char* fileName);
 bool TestUnorganizedPointsToSurface(vtkPolyData* points, int KNearestNeighbors = 3, int depth = 10,
                                     unsigned int graphType = vtkPointSetNormalOrientation::KNN_GRAPH);
@@ -23,23 +22,23 @@ int main(int argc, char *argv[])
   vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
 
   // Read input data
-  reader->SetFileName("../Data/SpherePoints.vtp");
+  reader->SetFileName("H:/bin/TestSurfaceRecontruction/R/Data/SpherePoints.vtp");
   reader->Update();
   vtkSmartPointer<vtkPolyData> points = vtkSmartPointer<vtkPolyData>::New();
   points = reader->GetOutput();
-  vtkSmartPointer<vtkPolyData> pointsCSV = vtkSmartPointer<vtkPolyData>::New();
-  pointsCSV = GetPointsFromCSV("../Data/points.csv");
-
+  TestUnorganizedPointsToSurface(points);
+  //points = reader->GetOutput();
+  //vtkSmartPointer<vtkPolyData> pointsCSV = vtkSmartPointer<vtkPolyData>::New();
+  //pointsCSV = GetPointsFromCSV("../Data/points.csv");
   //TestUnorganizedPointsToSurface(points, 3, 20);
-  TestUnorganizedPointsToSurface(pointsCSV, 20, 3);
-
-  reader->SetFileName("../Data/ouput_normalOrientation.vtp");
+  
+  /*reader->SetFileName("../Data/ouput_normalOrientation.vtp");
   reader->Update();
   vtkSmartPointer<vtkPolyData> pointsNormalOrientation = vtkSmartPointer<vtkPolyData>::New();
-  pointsNormalOrientation = reader->GetOutput();
+  pointsNormalOrientation = reader->GetOutput();*/
   //TestPoissonFromEstimatedNormalsWithOrientation(pointsNormalOrientation, 5);
 
-  //getch();
+  getch();
   return 0;
 }
 
@@ -56,7 +55,7 @@ bool TestPoissonFromEstimatedNormalsWithOrientation(vtkPolyData* points, int dep
     poissonFilter->Update();
 
     writer->SetInputData(poissonFilter->GetOutput());
-    writer->SetFileName("../Data/ouput_poisson.vtp");
+    writer->SetFileName("H:/bin/TestSurfaceRecontruction/R/Data/ouput_poisson.vtp");
     writer->Update();
     return true;
   }
@@ -83,7 +82,7 @@ bool TestUnorganizedPointsToSurface(vtkPolyData* points, int KNearestNeighbors, 
     normalEstimation->Update();
 
     writer->SetInputData(normalEstimation->GetOutput());
-    writer->SetFileName("../Data/ouput_normalEstimation.vtp");
+    writer->SetFileName("H:/bin/TestSurfaceRecontruction/R/Data/ouput_normalEstimation.vtp");
     writer->Update();
 
     std::cout << "STATUS: Estimate normals orientation..." << std::endl;
@@ -94,7 +93,7 @@ bool TestUnorganizedPointsToSurface(vtkPolyData* points, int KNearestNeighbors, 
     normalOrientationFilter->Update();
 
     writer->SetInputData(normalOrientationFilter->GetOutput());
-    writer->SetFileName("../Data/ouput_normalOrientation.vtp");
+    writer->SetFileName("H:/bin/TestSurfaceRecontruction/R/Data/ouput_normalOrientation.vtp");
     writer->Update();
 
     std::cout << "STATUS: Poisson reconstruction..." << std::endl;
@@ -104,7 +103,7 @@ bool TestUnorganizedPointsToSurface(vtkPolyData* points, int KNearestNeighbors, 
     poissonFilter->Update();
 
     writer->SetInputData(poissonFilter->GetOutput());
-    writer->SetFileName("../Data/ouput_poisson.vtp");
+    writer->SetFileName("H:/bin/TestSurfaceRecontruction/R/Data/ouput_poisson.vtp");
     writer->Update();
 
     // Output runtime

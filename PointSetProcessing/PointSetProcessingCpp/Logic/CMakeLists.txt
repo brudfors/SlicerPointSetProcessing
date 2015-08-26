@@ -14,12 +14,6 @@ find_library(POINTSETPROCESSING_LIBRARY PointSetProcessing
 find_path(POINTSETPROCESSING_INCLUDE_DIR vtkPointSetNormalEstimation.h
           PATHS "H:/src/VTK-filters/PointSetProcessing"
           DOC "Path to PointSetProcessing include directory." )                        
-          
-if (NOT POINTSETPROCESSING_LIBRARY)
-  message( FATAL_ERROR "PointSetProcessing library not found." )
-elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
-  message( FATAL_ERROR "PointSetProcessing include directory not found." )
-endif()
 
 # PoissonReconstruction
 find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
@@ -32,12 +26,23 @@ find_library(POISSONRECONSTRUCTION_LIBRARY vtkPoissonReconstruction
           PATHS "H:/bin/PoissonReconstruction/R/lib/Release"
           DOC "Path to the PoissonReconstruction library." )
           
-if (NOT POISSONRECONSTRUCTION_LIBRARY)
+# vtkInfovisBoostGraphAlgorithms
+find_library(INFOVISBOOSTGRAPH_ALGORITHMS vtkInfovisBoostGraphAlgorithms-6.3
+          PATHS "H:/S4R/VTKv6-build/lib/Release"
+          DOC "Path to the vtkInfovisBoostGraphAlgorithms-6.3 library." )
+           
+if (NOT POINTSETPROCESSING_LIBRARY)
+  message( FATAL_ERROR "PointSetProcessing library not found." )
+elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
+  message( FATAL_ERROR "PointSetProcessing include directory not found." )          
+elseif (NOT POISSONRECONSTRUCTION_LIBRARY)
   message( FATAL_ERROR "PoissonReconstruction library not found." )
 elseif (NOT POISSONRECONSTRUCTION_BINARY_DIR)
   message( FATAL_ERROR "PoissonReconstruction binary directory not found." )
 elseif (NOT POISSONRECONSTRUCTION_INCLUDE_DIR)
   message( FATAL_ERROR "PoissonReconstruction include directory not found." )
+elseif (NOT INFOVISBOOSTGRAPH_ALGORITHMS)
+  message( FATAL_ERROR "vtkInfovisBoostGraphAlgorithms-6.3 library not found." )
 endif()
 
 set(${KIT}_INCLUDE_DIRECTORIES
@@ -54,6 +59,7 @@ set(${KIT}_SRCS
 set(${KIT}_TARGET_LIBRARIES
   "${POINTSETPROCESSING_LIBRARY}"
   "${POISSONRECONSTRUCTION_LIBRARY}"
+  "${INFOVISBOOSTGRAPH_ALGORITHMS}"
   )
 
 #-----------------------------------------------------------------------------

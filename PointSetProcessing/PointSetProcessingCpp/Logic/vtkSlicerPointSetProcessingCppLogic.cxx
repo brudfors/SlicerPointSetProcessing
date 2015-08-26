@@ -89,25 +89,43 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 void vtkSlicerPointSetProcessingCppLogic
-::PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int kNearestNeighbors, int depth, unsigned int graphType)
+::PointSetProcessingConnector(vtkMRMLModelNode* input, 
+                              vtkMRMLModelNode* output,
+                              int kNearestNeighbors, 
+                              int depth, 
+                              unsigned int graphType)
 {
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::PointSetProcessingConnector");
+
 	vtkPolyData* inputPolyData = input->GetPolyData();
 	
-	// vtkPointSetNormalEstimation
-    vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
-    normalEstimation->SetInputData(inputPolyData);
+  // vtkPointSetNormalEstimation
+  vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
+  normalEstimation->SetInputData(inputPolyData);
 
-	// vtkPointSetNormalOrientation
-    vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
-	//normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort());  
-	//normalOrientationFilter->SetGraphFilterType(graphType);
- //   normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+  // vtkPointSetNormalOrientation
+  vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
+  normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort()); 
+  if (graphType == vtkPointSetNormalOrientation::KNN_GRAPH)
+  {
+    normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::KNN_GRAPH);
+  }
+  else if (graphType == vtkPointSetNormalOrientation::RIEMANN_GRAPH)
+  {
+    normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::RIEMANN_GRAPH);
+  }
+  else
+  {
+    vtkWarningMacro("Invalid graphType! Got ' + graphType + ' should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
+    return;
+  }
+  normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
 
-	// vtkPoissonReconstruction
-    vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
-    poissonFilter->SetDepth(depth);
-    poissonFilter->SetInputConnection(normalEstimation->GetOutputPort());
-    poissonFilter->Update();	
+  // vtkPoissonReconstruction
+  vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
+  poissonFilter->SetDepth(depth);
+  poissonFilter->SetInputConnection(normalOrientationFilter->GetOutputPort());
+  poissonFilter->Update();	
 
-	vtkPolyData* outputPolyData = poissonFilter->GetOutput();
+  output->SetAndObservePolyData(poissonFilter->GetOutput());
 }

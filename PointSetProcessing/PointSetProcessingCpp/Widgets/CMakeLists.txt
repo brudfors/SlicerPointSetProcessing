@@ -6,7 +6,7 @@ set(${KIT}_EXPORT_DIRECTIVE "Q_SLICER_MODULE_${MODULE_NAME_UPPER}_WIDGETS_EXPORT
 
 set(${KIT}_INCLUDE_DIRECTORIES
   )
-
+  
 set(${KIT}_SRCS
   qSlicer${MODULE_NAME}FooBarWidget.cxx
   qSlicer${MODULE_NAME}FooBarWidget.h
