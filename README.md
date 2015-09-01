@@ -1,7 +1,7 @@
 # SlicerPointSetProcessing
 
 A module performing point-set processing tasks in 3D Slicer. Currently implemented tasks are:
-* Poisson Surface Reconstruction (VTK algorithms by David Doria, algorithm from http://research.microsoft.com/en-us/um/people/hoppe/recon.pdf)
+* Poisson Surface Reconstruction (VTK implementation by David Doria, algorithm from http://research.microsoft.com/en-us/um/people/hoppe/recon.pdf)
 
 ## Build Instructions
 1. Follow the instructions found here: http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers/Build_Instructions, in order to build **3D Slicer**.  
