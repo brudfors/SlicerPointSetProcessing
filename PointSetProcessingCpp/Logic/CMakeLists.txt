@@ -9,26 +9,26 @@ set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT
 
 # PointSetProcessing
 find_library(POINTSETPROCESSING_LIBRARY PointSetProcessing
-          PATHS "H:/bin/PointSetProcessing/R/Release"
+          PATHS "H:/_B/VTK-filters/PointSetProcessingR/Release"
           DOC "Path to the PointSetProcessing library." )  
 find_path(POINTSETPROCESSING_INCLUDE_DIR vtkPointSetNormalEstimation.h
-          PATHS "H:/src/VTK-filters/PointSetProcessing"
+          PATHS "H:/_S/VTK-filters/PointSetProcessing"
           DOC "Path to PointSetProcessing include directory." )                        
 
 # PoissonReconstruction
 find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
-          PATHS "H:/bin/PoissonReconstruction/R"
+          PATHS "H:/_B/VTK-filters/PoissonReconstructionR"
           DOC "Path to PoissonReconstruction binary directory." )
 find_path(POISSONRECONSTRUCTION_INCLUDE_DIR vtkPoissonReconstruction.h
-          PATHS "H:/src/VTK-filters/PoissonReconstruction/source"
+          PATHS "H:/_S/VTK-filters/PoissonReconstruction/source"
           DOC "Path to PoissonReconstruction include directory." )
 find_library(POISSONRECONSTRUCTION_LIBRARY vtkPoissonReconstruction
-          PATHS "H:/bin/PoissonReconstruction/R/lib/Release"
+          PATHS "H:/_B/VTK-filters/PoissonReconstructionR/lib/Release"
           DOC "Path to the PoissonReconstruction library." )
           
 # vtkInfovisBoostGraphAlgorithms
 find_library(INFOVISBOOSTGRAPH_ALGORITHMS vtkInfovisBoostGraphAlgorithms-6.3
-          PATHS "H:/S4R/VTKv6-build/lib/Release"
+          PATHS "H:/_B/S4R/VTKv6-build/lib/Release"
           DOC "Path to the vtkInfovisBoostGraphAlgorithms-6.3 library." )
            
 if (NOT POINTSETPROCESSING_LIBRARY)
