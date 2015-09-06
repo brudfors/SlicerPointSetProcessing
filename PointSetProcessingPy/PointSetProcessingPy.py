@@ -207,6 +207,9 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 
     # Refresh 
     self.onSelect()
+        
+    lm=slicer.app.layoutManager()
+    lm.setLayout(4) # One 3D-view    
     
   def onGraphTypeChanged(self, type):
     if type == 'KNN':
