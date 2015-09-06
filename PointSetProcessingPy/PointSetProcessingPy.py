@@ -3,6 +3,8 @@ import unittest
 from __main__ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 
+import logging
+
 ############################################################ PointSetProcessingPy 
 class PointSetProcessingPy(ScriptedLoadableModule):
   def __init__(self, parent):
@@ -24,10 +26,11 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
     poissonCollapsibleButton = ctk.ctkCollapsibleButton()
-    poissonCollapsibleButton.text = "Poisson Surface Reconstruction"
+    poissonCollapsibleButton.text = "Surface Reconstruction from Unorganized Points"
     self.layout.addWidget(poissonCollapsibleButton)
     poissonFormLayout = qt.QFormLayout(poissonCollapsibleButton)
 
+    # Input
     self.inputSelector = slicer.qMRMLNodeComboBox()
     self.inputSelector.nodeTypes = ( ("vtkMRMLModelNode"), "" )
     self.inputSelector.selectNodeUponCreation = True
@@ -40,33 +43,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputSelector.setToolTip( "Pick the input to the algorithm." )
     poissonFormLayout.addRow("Input Model: ", self.inputSelector)
 
-    self.parametersOutputGroupBox = ctk.ctkCollapsibleGroupBox()
-    self.parametersOutputGroupBox.setTitle("Parameters")
-    parametersOutputFormLayout = qt.QFormLayout(self.parametersOutputGroupBox)
-    poissonFormLayout.addRow(self.parametersOutputGroupBox)
-    
-    self.depthSlider = ctk.ctkSliderWidget()
-    self.depthSlider.setDecimals(0)
-    self.depthSlider.singleStep = 1
-    self.depthSlider.minimum = 1
-    self.depthSlider.maximum = 20
-    self.depthSlider.value = 10
-    parametersOutputFormLayout.addRow('Depth: ', self.depthSlider)
-
-    self.knnSlider = ctk.ctkSliderWidget()
-    self.knnSlider.setDecimals(0)
-    self.knnSlider.singleStep = 1
-    self.knnSlider.minimum = 1
-    self.knnSlider.maximum = 20
-    self.knnSlider.value = 3
-    parametersOutputFormLayout.addRow('Nearest Neighbors: ', self.knnSlider)
-    
-    self.graphTypeComboBox = qt.QComboBox()
-    self.graphTypeComboBox.addItem('KNN')
-    self.graphTypeComboBox.addItem('Riemann')        
-    parametersOutputFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
-    
-        # Runtime
+    # Runtime
     self.runtimeGroupBox = ctk.ctkCollapsibleGroupBox()
     self.runtimeGroupBox.setTitle("Runtime")
     runtimeFormLayout = qt.QFormLayout(self.runtimeGroupBox)
@@ -87,55 +64,148 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
                                            qproperty-alignment: AlignCenter}")
     runtimeFormLayout.addRow(self.runtimeLabel)
     
-    self.applyButton = qt.QPushButton("Apply")
-    self.applyButton.toolTip = "Run the algorithm."
-    self.applyButton.enabled = False
-    self.applyButton.checkable = True
-    poissonFormLayout.addRow(self.applyButton)
+    # Normals
+    self.normalsGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.normalsGroupBox.setTitle("Normals")
+    normalsFormLayout = qt.QFormLayout(self.normalsGroupBox)
+    poissonFormLayout.addRow(self.normalsGroupBox)
+    
+    self.parametersNormalsOutputGroupBox = qt.QGroupBox()
+    self.parametersNormalsOutputGroupBox.setTitle("Parameters")
+    parametersNormalsOutputFormLayout = qt.QFormLayout(self.parametersNormalsOutputGroupBox)
+    normalsFormLayout.addRow(self.parametersNormalsOutputGroupBox)
 
+    self.graphTypeComboBox = qt.QComboBox()
+    self.graphTypeComboBox.addItem('KNN')
+    self.graphTypeComboBox.addItem('Riemann')  
+    self.graphTypeComboBox.setToolTip('')    
+    parametersNormalsOutputFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
+    
+    self.knnSlider = ctk.ctkSliderWidget()
+    self.knnSlider.setDecimals(0)
+    self.knnSlider.singleStep = 1
+    self.knnSlider.minimum = 1
+    self.knnSlider.maximum = 20
+    self.knnSlider.value = 3
+    self.knnSlider.setToolTip('')
+    parametersNormalsOutputFormLayout.addRow('Nearest Neighbors: ', self.knnSlider)
+           
+    self.computeNormalsButton = qt.QPushButton("Compute Normals")
+    self.computeNormalsButton.enabled = False
+    self.computeNormalsButton.checkable = True
+    normalsFormLayout.addRow(self.computeNormalsButton)
+    
+    # Surface
+    self.surfaceGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.surfaceGroupBox.setTitle("Surface")
+    surfaceFormLayout = qt.QFormLayout(self.surfaceGroupBox)
+    poissonFormLayout.addRow(self.surfaceGroupBox)
+    
+    self.parametersPoissonOutputGroupBox = qt.QGroupBox()
+    self.parametersPoissonOutputGroupBox.setTitle("Parameters")
+    parametersPoissonOutputFormLayout = qt.QFormLayout(self.parametersPoissonOutputGroupBox)
+    surfaceFormLayout.addRow(self.parametersPoissonOutputGroupBox)
+    
+    self.depthSlider = ctk.ctkSliderWidget()
+    self.depthSlider.setDecimals(0)
+    self.depthSlider.singleStep = 1
+    self.depthSlider.minimum = 1
+    self.depthSlider.maximum = 20
+    self.depthSlider.value = 8
+    self.depthSlider.setToolTip('This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound. The default value for this parameter is 8.')
+    parametersPoissonOutputFormLayout.addRow('Depth: ', self.depthSlider)
+    
+    self.scaleSlider = ctk.ctkSliderWidget()
+    self.scaleSlider.setDecimals(2)
+    self.scaleSlider.singleStep = 0.01
+    self.scaleSlider.minimum = 1
+    self.scaleSlider.maximum = 10
+    self.scaleSlider.value = 1.25
+    self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    parametersPoissonOutputFormLayout.addRow('Scale: ', self.scaleSlider)    
+    
+    self.computeSurfaceButton = qt.QPushButton("Compute Surface")
+    self.computeSurfaceButton.enabled = False
+    self.computeSurfaceButton.checkable = True
+    surfaceFormLayout.addRow(self.computeSurfaceButton)
+    
     # connections
-    self.applyButton.connect('clicked(bool)', self.onApplyButton)
-    self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
-
+    self.computeNormalsButton.connect('clicked(bool)', self.onComputeNormals)
+    self.computeSurfaceButton.connect('clicked(bool)', self.onComputeSurface)
+    self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
+    self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
+    
     # Add vertical spacer
     self.layout.addStretch(1)
 
     # Refresh selector
     self.onSelect()
-    
+  
+  def onGraphTypeChanged(self, type):
+    if type == 'KNN':
+      self.knnSlider.enabled = True
+    elif type == 'Riemann':
+      self.knnSlider.enabled = False
+      
   def onSelect(self):
-    self.applyButton.enabled = self.inputSelector.currentNode()
+    logic = PointSetProcessingPyLogic()
+    self.computeNormalsButton.enabled = self.inputSelector.currentNode()
+    self.computeSurfaceButton.enabled = logic.inputHasNormals(self.inputSelector.currentNode())
 
-  def onApplyButton(self):
-    if self.applyButton.checked:
+  def onComputeNormals(self):
+    if self.computeNormalsButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.apply(self.inputSelector.currentNode(), self.knnSlider.value, self.depthSlider.value, self.graphTypeComboBox.currentText, self.runtimeLabel)
-      self.applyButton.checked = False   
+      logic.computeNormals(self.inputSelector.currentNode(), self.knnSlider.value, self.graphTypeComboBox.currentText, self.runtimeLabel)
+      self.computeNormalsButton.checked = False   
+      self.computeSurfaceButton.enabled = logic.inputHasNormals(self.inputSelector.currentNode())
+      
+  def onComputeSurface(self):
+    if self.computeSurfaceButton.checked:
+      logic = PointSetProcessingPyLogic()
+      logic.computeSurface(self.inputSelector.currentNode(), self.depthSlider.value, self.runtimeLabel)
+      self.computeSurfaceButton.checked = False         
 
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def apply(self, inputModelNode, kNearestNeighbors, depth, graphTypeText, runtimeLabel = None):
+  def computeNormals(self, inputModelNode, kNearestNeighbors, graphTypeText, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
-    if not outputModelNode:
-      scene = slicer.mrmlScene
-      outputModelNode = slicer.vtkMRMLModelNode()
-      outputModelNode.SetScene(scene)
-      outputModelNode.SetName('PointSetProcessingOutput')
-      modelDisplay = slicer.vtkMRMLModelDisplayNode()
-      modelDisplay.SetColor(1, 0, 0)
-      modelDisplay.SetScene(scene)
-      scene.AddNode(modelDisplay)
-      outputModelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())
-      scene.AddNode(outputModelNode)   
     if graphTypeText == 'Riemann':
       graphType = 0
     elif graphTypeText == 'KNN':
       graphType = 1
-    runtime = slicer.modules.pointsetprocessingcpp.logic().PointSetProcessingConnector(inputModelNode, outputModelNode, int(kNearestNeighbors), int(depth), graphType)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, int(kNearestNeighbors), graphType)
     if runtimeLabel:
-      runtimeLabel.setText('%.2f' % runtime + ' s.')
+      runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
     return True
+   
+  def computeSurface(self, inputModelNode, depth, runtimeLabel = None):
+    outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
+    if not outputModelNode:
+      outputModelNode = self.createOutputModelNode()
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth))
+    if runtimeLabel:
+      runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
+    return True
+    
+  def inputHasNormals(self, inputModelNode):
+    if not inputModelNode:
+      logging.info('inputHasNormals(): No input')
+      return False
+    return slicer.modules.pointsetprocessingcpp.logic().HasPointNormals(inputModelNode)
+   
+  def createOutputModelNode(self):
+    scene = slicer.mrmlScene
+    outputModelNode = slicer.vtkMRMLModelNode()
+    outputModelNode.SetScene(scene)
+    outputModelNode.SetName('PointSetProcessingOutput')
+    modelDisplay = slicer.vtkMRMLModelDisplayNode()
+    modelDisplay.SetColor(1, 0, 0)
+    modelDisplay.SetScene(scene)
+    scene.AddNode(modelDisplay)
+    outputModelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())
+    scene.AddNode(outputModelNode)  
+    return outputModelNode
     
 ############################################################ PointSetProcessingPyTest    
 class PointSetProcessingPyTest(ScriptedLoadableModuleTest):

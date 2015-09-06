@@ -13,4 +13,7 @@ A module performing point-set processing tasks in 3D Slicer. Currently implement
 
 ![Alt text](https://github.com/brudfors/SlicerPointSetProcessing/blob/master/PointSetProcessingScreenShot.PNG?raw=true "SlicerPointSetProcessing")
 
-
+## TODO
+* Update readme (inc. citations) and screenshot
+* Add all parameters
+* Seperate into two tasks: normals and surface (see http://www.paraview.org/Wiki/VTK/Examples/Cxx/PolyData/PolyDataExtractNormals)

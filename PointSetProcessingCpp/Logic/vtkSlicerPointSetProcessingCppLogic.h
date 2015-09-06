@@ -46,7 +46,10 @@ public:
   vtkTypeMacro(vtkSlicerPointSetProcessingCppLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  float PointSetProcessingConnector(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int kNearestNeighbors, int depth, unsigned int graphType);
+  float ComputeNormals(vtkMRMLModelNode* input, int kNearestNeighbors, unsigned int graphType);
+  float ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth);
+  bool HasPointNormals(vtkMRMLModelNode* input);
+  bool HasCellNormals(vtkMRMLModelNode* input);
 
 protected:
   vtkSlicerPointSetProcessingCppLogic();

@@ -23,9 +23,13 @@
 #include <vtkMRMLScene.h>
 
 // VTK includes
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkTimerLog.h>
 
 // STD includes
@@ -90,22 +94,16 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::PointSetProcessingConnector(vtkMRMLModelNode* input, 
-                              vtkMRMLModelNode* output,
-                              int kNearestNeighbors, 
-                              int depth, 
-                              unsigned int graphType)
+::ComputeNormals(vtkMRMLModelNode* input, int kNearestNeighbors, unsigned int graphType)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::PointSetProcessingConnector");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
 
   vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
   timer->StartTimer();
-
-	vtkPolyData* inputPolyData = input->GetPolyData();
 	
   // vtkPointSetNormalEstimation
   vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
-  normalEstimation->SetInputData(inputPolyData);
+  normalEstimation->SetInputData(input->GetPolyData());
 
   // vtkPointSetNormalOrientation
   vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
@@ -124,11 +122,28 @@ float vtkSlicerPointSetProcessingCppLogic
     return 0;
   }
   normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+  normalOrientationFilter->Update();	
+
+  input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+
+  timer->StopTimer();
+  float runtime = timer->GetElapsedTime();
+  return runtime;
+}
+
+//---------------------------------------------------------------------------
+float vtkSlicerPointSetProcessingCppLogic
+::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
+
+  vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+  timer->StartTimer();
 
   // vtkPoissonReconstruction
   vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
   poissonFilter->SetDepth(depth);
-  poissonFilter->SetInputConnection(normalOrientationFilter->GetOutputPort());
+  poissonFilter->SetInputData(input->GetPolyData());
   poissonFilter->Update();	
 
   output->SetAndObservePolyData(poissonFilter->GetOutput());
@@ -136,4 +151,168 @@ float vtkSlicerPointSetProcessingCppLogic
   timer->StopTimer();
   float runtime = timer->GetElapsedTime();
   return runtime;
+}
+
+//---------------------------------------------------------------------------
+// From: http://www.paraview.org/Wiki/VTK/Examples/Cxx/PolyData/PolyDataExtractNormals
+bool vtkSlicerPointSetProcessingCppLogic
+::HasPointNormals(vtkMRMLModelNode* input)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasPointNormals");
+
+	vtkPolyData* polydata = input->GetPolyData();
+
+  std::cout << "In GetPointNormals: " << polydata->GetNumberOfPoints() << std::endl;
+  std::cout << "Looking for point normals..." << std::endl;
+ 
+  // Count points
+  vtkIdType numPoints = polydata->GetNumberOfPoints();
+  std::cout << "There are " << numPoints << " points." << std::endl;
+ 
+  // Count triangles
+  vtkIdType numPolys = polydata->GetNumberOfPolys();
+  std::cout << "There are " << numPolys << " polys." << std::endl;
+ 
+  ////////////////////////////////////////////////////////////////
+  // Double normals in an array
+  vtkDoubleArray* normalDataDouble = vtkDoubleArray::SafeDownCast(polydata->GetPointData()->GetArray("Normals"));
+ 
+  if(normalDataDouble)
+  {
+    int nc = normalDataDouble->GetNumberOfTuples();
+    std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Double normals in an array
+  vtkFloatArray* normalDataFloat = vtkFloatArray::SafeDownCast(polydata->GetPointData()->GetArray("Normals"));
+ 
+  if(normalDataFloat)
+  {
+    int nc = normalDataFloat->GetNumberOfTuples();
+    std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Point normals
+  vtkDoubleArray* normalsDouble = vtkDoubleArray::SafeDownCast(polydata->GetPointData()->GetNormals());
+ 
+  if(normalsDouble)
+  {
+    std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Point normals
+  vtkFloatArray* normalsFloat = vtkFloatArray::SafeDownCast(polydata->GetPointData()->GetNormals());
+ 
+  if(normalsFloat)
+  {
+    std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    return true;
+  }
+ 
+  /////////////////////////////////////////////////////////////////////
+  // Generic type point normals
+  vtkDataArray* normalsGeneric = polydata->GetPointData()->GetNormals(); 
+  if(normalsGeneric)
+  {
+    std::cout << "There are " << normalsGeneric->GetNumberOfTuples() << " normals in normalsGeneric" << std::endl;
+ 
+    double testDouble[3];
+    normalsGeneric->GetTuple(0, testDouble);
+ 
+    std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
+    return true;
+  }
+ 
+ 
+  // If the function has not yet quit, there were none of these types of normals
+  std::cout << "Normals not found!" << std::endl;
+  return false;
+}
+
+//---------------------------------------------------------------------------
+// From: http://www.paraview.org/Wiki/VTK/Examples/Cxx/PolyData/PolyDataExtractNormals
+bool vtkSlicerPointSetProcessingCppLogic
+::HasCellNormals(vtkMRMLModelNode* input)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasCellNormals");
+
+	vtkPolyData* polydata = input->GetPolyData();
+
+  std::cout << "Looking for cell normals..." << std::endl;
+ 
+  // Count points
+  vtkIdType numCells = polydata->GetNumberOfCells();
+  std::cout << "There are " << numCells << " cells." << std::endl;
+ 
+  // Count triangles
+  vtkIdType numPolys = polydata->GetNumberOfPolys();
+  std::cout << "There are " << numPolys << " polys." << std::endl;
+ 
+  ////////////////////////////////////////////////////////////////
+  // Double normals in an array
+  vtkDoubleArray* normalDataDouble = vtkDoubleArray::SafeDownCast(polydata->GetCellData()->GetArray("Normals"));
+ 
+  if(normalDataDouble)
+  {
+    int nc = normalDataDouble->GetNumberOfTuples();
+    std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Double normals in an array
+  vtkFloatArray* normalDataFloat = vtkFloatArray::SafeDownCast(polydata->GetCellData()->GetArray("Normals"));
+ 
+  if(normalDataFloat)
+  {
+    int nc = normalDataFloat->GetNumberOfTuples();
+    std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Point normals
+  vtkDoubleArray* normalsDouble = vtkDoubleArray::SafeDownCast(polydata->GetCellData()->GetNormals());
+ 
+  if(normalsDouble)
+  {
+    std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    return true;
+  }
+ 
+  ////////////////////////////////////////////////////////////////
+  // Point normals
+  vtkFloatArray* normalsFloat = vtkFloatArray::SafeDownCast(polydata->GetCellData()->GetNormals());
+ 
+  if(normalsFloat)
+  {
+    std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    return true;
+  }
+ 
+  /////////////////////////////////////////////////////////////////////
+  // Generic type point normals
+  vtkDataArray* normalsGeneric = polydata->GetCellData()->GetNormals();
+  if(normalsGeneric)
+  {
+    std::cout << "There are " << normalsGeneric->GetNumberOfTuples()
+              << " normals in normalsGeneric" << std::endl;
+ 
+    double testDouble[3];
+    normalsGeneric->GetTuple(0, testDouble);
+ 
+    std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
+
+    return true;
+  }
+
+  // If the function has not yet quit, there were none of these types of normals
+  std::cout << "Normals not found!" << std::endl;
+  return false;
 }
