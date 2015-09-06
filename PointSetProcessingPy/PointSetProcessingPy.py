@@ -25,10 +25,10 @@ class PointSetProcessingPy(ScriptedLoadableModule):
 class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
-    poissonCollapsibleButton = ctk.ctkCollapsibleButton()
-    poissonCollapsibleButton.text = "Surface Reconstruction from Unorganized Points"
-    self.layout.addWidget(poissonCollapsibleButton)
-    poissonFormLayout = qt.QFormLayout(poissonCollapsibleButton)
+    pointSetProcessingCollapsibleButton = ctk.ctkCollapsibleButton()
+    pointSetProcessingCollapsibleButton.text = "Surface Reconstruction from Unorganized Points"
+    self.layout.addWidget(pointSetProcessingCollapsibleButton)
+    pointSetProcessingFormLayout = qt.QFormLayout(pointSetProcessingCollapsibleButton)
 
     # Input
     self.inputSelector = slicer.qMRMLNodeComboBox()
@@ -41,13 +41,13 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputSelector.showChildNodeTypes = False
     self.inputSelector.setMRMLScene( slicer.mrmlScene )
     self.inputSelector.setToolTip( "Pick the input to the algorithm." )
-    poissonFormLayout.addRow("Input Model: ", self.inputSelector)
+    pointSetProcessingFormLayout.addRow("Input Model: ", self.inputSelector)
 
     # Runtime
     self.runtimeGroupBox = ctk.ctkCollapsibleGroupBox()
     self.runtimeGroupBox.setTitle("Runtime")
     runtimeFormLayout = qt.QFormLayout(self.runtimeGroupBox)
-    poissonFormLayout.addRow(self.runtimeGroupBox)
+    pointSetProcessingFormLayout.addRow(self.runtimeGroupBox)
     
     self.runtimeLabel = qt.QLabel()
     self.runtimeLabel.setText("... s.")
@@ -68,7 +68,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.normalsGroupBox = ctk.ctkCollapsibleGroupBox()
     self.normalsGroupBox.setTitle("Normals")
     normalsFormLayout = qt.QFormLayout(self.normalsGroupBox)
-    poissonFormLayout.addRow(self.normalsGroupBox)
+    pointSetProcessingFormLayout.addRow(self.normalsGroupBox)
     
     self.parametersNormalsOutputGroupBox = qt.QGroupBox()
     self.parametersNormalsOutputGroupBox.setTitle("Parameters")
@@ -99,7 +99,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.surfaceGroupBox = ctk.ctkCollapsibleGroupBox()
     self.surfaceGroupBox.setTitle("Surface")
     surfaceFormLayout = qt.QFormLayout(self.surfaceGroupBox)
-    poissonFormLayout.addRow(self.surfaceGroupBox)
+    pointSetProcessingFormLayout.addRow(self.surfaceGroupBox)
     
     self.parametersPoissonOutputGroupBox = qt.QGroupBox()
     self.parametersPoissonOutputGroupBox.setTitle("Parameters")
@@ -169,7 +169,6 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
   def computeNormals(self, inputModelNode, kNearestNeighbors, graphTypeText, runtimeLabel = None):
-    outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
     if graphTypeText == 'Riemann':
       graphType = 0
     elif graphTypeText == 'KNN':
@@ -217,13 +216,14 @@ class PointSetProcessingPyTest(ScriptedLoadableModuleTest):
     
   def runTest(self):
     self.setUp()
-    self.test_Poisson()
+    self.test_Module()
 
-  def test_Poisson(self):
-    self.delayDisplay("Testing Poisson Reconstruction")
+  def test_Module(self):
+    self.delayDisplay("Testing module")
     pointSetProcessingPyModuleDirectoryPath = slicer.modules.pointsetprocessingpy.path.replace("PointSetProcessingPy.py", "")
     slicer.util.loadModel(pointSetProcessingPyModuleDirectoryPath + '../Data/SpherePoints.vtp', 'SpherePoints')
     inputModelNode = slicer.util.getNode('SpherePoints')
     logic = PointSetProcessingPyLogic()
-    self.assertTrue(logic.apply(inputModelNode, 3, 10,'KNN'))        
-    self.delayDisplay('Testing Poisson Reconstruction passed!')    
+    self.assertTrue(logic.computeNormals(inputModelNode, 3, 'KNN'))        
+    self.assertTrue(logic.computeSurface(inputModelNode, 8))        
+    self.delayDisplay('Testing module passed!')    
