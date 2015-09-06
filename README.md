@@ -15,5 +15,6 @@ A module performing point-set processing tasks in 3D Slicer. Currently implement
 
 ## TODO
 * Update readme (inc. citations) and screenshot
-* Add all parameters
+* Visualize normals
 * Fix test
+* Crash when loading model into module

@@ -94,7 +94,7 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormals(vtkMRMLModelNode* input, int kNearestNeighbors, unsigned int graphType)
+::ComputeNormals(vtkMRMLModelNode* input, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
 
@@ -104,6 +104,21 @@ float vtkSlicerPointSetProcessingCppLogic
   // vtkPointSetNormalEstimation
   vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
   normalEstimation->SetInputData(input->GetPolyData());
+  if (mode == vtkPointSetNormalEstimation::FIXED_NUMBER)
+  {
+    normalEstimation->SetModeToFixedNumber();
+    normalEstimation->SetNumberOfNeighbors(numberOfNeighbors);
+  }
+  else if (mode == vtkPointSetNormalEstimation::RADIUS)
+  {
+    normalEstimation->SetModeToRadius();
+    normalEstimation->SetRadius(radius);
+  }
+  else
+  {
+    vtkWarningMacro("Invalid mode! Should be either 0 (FIXED_NUMBER) or 1 (RADIUS).");
+    return 0;
+  }
 
   // vtkPointSetNormalOrientation
   vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
@@ -111,6 +126,7 @@ float vtkSlicerPointSetProcessingCppLogic
   if (graphType == vtkPointSetNormalOrientation::KNN_GRAPH)
   {
     normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::KNN_GRAPH);
+    normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
   }
   else if (graphType == vtkPointSetNormalOrientation::RIEMANN_GRAPH)
   {
@@ -118,10 +134,10 @@ float vtkSlicerPointSetProcessingCppLogic
   }
   else
   {
-    vtkWarningMacro("Invalid graphType! Got ' + graphType + ' should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
+    vtkWarningMacro("Invalid graphType! Should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
     return 0;
   }
-  normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+
   normalOrientationFilter->Update();	
 
   input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
@@ -133,7 +149,7 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth)
+::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
 
@@ -142,8 +158,14 @@ float vtkSlicerPointSetProcessingCppLogic
 
   // vtkPoissonReconstruction
   vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
-  poissonFilter->SetDepth(depth);
   poissonFilter->SetInputData(input->GetPolyData());
+  poissonFilter->SetDepth(depth);
+  poissonFilter->SetScale(scale);
+  poissonFilter->SetSolverDivide(solverDivide); 
+  poissonFilter->SetIsoDivide(isoDivide); 
+  poissonFilter->SetSamplesPerNode(samplesPerNode);
+  poissonFilter->SetConfidence(confidence); 
+  poissonFilter->SetVerbose(verbose);   
   poissonFilter->Update();	
 
   output->SetAndObservePolyData(poissonFilter->GetOutput());

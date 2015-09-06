@@ -75,9 +75,36 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     parametersNormalsOutputFormLayout = qt.QFormLayout(self.parametersNormalsOutputGroupBox)
     normalsFormLayout.addRow(self.parametersNormalsOutputGroupBox)
 
+    self.modeTypeComboBox = qt.QComboBox()
+    self.modeTypeComboBox.addItem('Fixed')  
+    self.modeTypeComboBox.addItem('Radius')
+    self.modeTypeComboBox.setCurrentIndex(1)
+    self.modeTypeComboBox.setToolTip('')    
+    parametersNormalsOutputFormLayout.addRow('Mode Type: ', self.modeTypeComboBox)
+    
+    self.numberOfNeighborsSlider = ctk.ctkSliderWidget()
+    self.numberOfNeighborsSlider.setDecimals(0)
+    self.numberOfNeighborsSlider.singleStep = 1
+    self.numberOfNeighborsSlider.minimum = 1
+    self.numberOfNeighborsSlider.maximum = 20
+    self.numberOfNeighborsSlider.value = 4
+    self.numberOfNeighborsSlider.setToolTip('')
+    self.numberOfNeighborsSlider.enabled = False
+    parametersNormalsOutputFormLayout.addRow('Fixed Neighbors: ', self.numberOfNeighborsSlider)
+    
+    self.radiusSlider = ctk.ctkSliderWidget()
+    self.radiusSlider.setDecimals(2)
+    self.radiusSlider.singleStep = 0.01
+    self.radiusSlider.minimum = 1
+    self.radiusSlider.maximum = 10
+    self.radiusSlider.value = 1.0
+    self.radiusSlider.setToolTip('')
+    parametersNormalsOutputFormLayout.addRow('Radius: ', self.radiusSlider)
+    
     self.graphTypeComboBox = qt.QComboBox()
-    self.graphTypeComboBox.addItem('KNN')
     self.graphTypeComboBox.addItem('Riemann')  
+    self.graphTypeComboBox.addItem('KNN')
+    self.graphTypeComboBox.setCurrentIndex(1)
     self.graphTypeComboBox.setToolTip('')    
     parametersNormalsOutputFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
     
@@ -124,6 +151,45 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
     parametersPoissonOutputFormLayout.addRow('Scale: ', self.scaleSlider)    
     
+    self.solverDivideSlider = ctk.ctkSliderWidget()
+    self.solverDivideSlider.setDecimals(0)
+    self.solverDivideSlider.singleStep = 1
+    self.solverDivideSlider.minimum = 1
+    self.solverDivideSlider.maximum = 20
+    self.solverDivideSlider.value = 8
+    self.solverDivideSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    parametersPoissonOutputFormLayout.addRow('Solver Divide: ', self.solverDivideSlider)   
+    
+    self.isoDivideSlider = ctk.ctkSliderWidget()
+    self.isoDivideSlider.setDecimals(0)
+    self.isoDivideSlider.singleStep = 1
+    self.isoDivideSlider.minimum = 1
+    self.isoDivideSlider.maximum = 20
+    self.isoDivideSlider.value = 8
+    self.isoDivideSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    parametersPoissonOutputFormLayout.addRow('Iso Divide: ', self.isoDivideSlider)   
+ 
+    self.samplesPerNodeSlider = ctk.ctkSliderWidget()
+    self.samplesPerNodeSlider.setDecimals(2)
+    self.samplesPerNodeSlider.singleStep = 0.1
+    self.samplesPerNodeSlider.minimum = 1
+    self.samplesPerNodeSlider.maximum = 10
+    self.samplesPerNodeSlider.value = 1.0
+    self.samplesPerNodeSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    parametersPoissonOutputFormLayout.addRow('Samples per Node: ', self.samplesPerNodeSlider)   
+    
+    self.confidenceComboBox = qt.QComboBox()
+    self.confidenceComboBox.addItem('False')
+    self.confidenceComboBox.addItem('True')  
+    self.confidenceComboBox.setToolTip('')    
+    parametersPoissonOutputFormLayout.addRow('Confidence: ', self.confidenceComboBox)
+   
+    self.verboseComboBox = qt.QComboBox()
+    self.verboseComboBox.addItem('False')
+    self.verboseComboBox.addItem('True')  
+    self.verboseComboBox.setToolTip('')    
+    parametersPoissonOutputFormLayout.addRow('Verbose: ', self.verboseComboBox)
+    
     self.computeSurfaceButton = qt.QPushButton("Compute Surface")
     self.computeSurfaceButton.enabled = False
     self.computeSurfaceButton.checkable = True
@@ -134,18 +200,27 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.computeSurfaceButton.connect('clicked(bool)', self.onComputeSurface)
     self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
     self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
+    self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeTypeChanged)
     
     # Add vertical spacer
     self.layout.addStretch(1)
 
-    # Refresh selector
+    # Refresh 
     self.onSelect()
-  
+    
   def onGraphTypeChanged(self, type):
     if type == 'KNN':
       self.knnSlider.enabled = True
     elif type == 'Riemann':
       self.knnSlider.enabled = False
+
+  def onModeTypeChanged(self, type):
+    if type == 'Radius':
+      self.radiusSlider.enabled = True
+      self.numberOfNeighborsSlider.enabled = False
+    elif type == 'Fixed':
+      self.radiusSlider.enabled = False
+      self.numberOfNeighborsSlider.enabled = True
       
   def onSelect(self):
     logic = PointSetProcessingPyLogic()
@@ -155,34 +230,30 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def onComputeNormals(self):
     if self.computeNormalsButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.computeNormals(self.inputSelector.currentNode(), self.knnSlider.value, self.graphTypeComboBox.currentText, self.runtimeLabel)
+      logic.computeNormals(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)
       self.computeNormalsButton.checked = False   
       self.computeSurfaceButton.enabled = logic.inputHasNormals(self.inputSelector.currentNode())
       
   def onComputeSurface(self):
     if self.computeSurfaceButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.computeSurface(self.inputSelector.currentNode(), self.depthSlider.value, self.runtimeLabel)
+      logic.computeSurface(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
       self.computeSurfaceButton.checked = False         
 
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def computeNormals(self, inputModelNode, kNearestNeighbors, graphTypeText, runtimeLabel = None):
-    if graphTypeText == 'Riemann':
-      graphType = 0
-    elif graphTypeText == 'KNN':
-      graphType = 1
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, int(kNearestNeighbors), graphType)
+  def computeNormals(self, inputModelNode, modeType, numberOfNeighbors, radius, kNearestNeighbors, graphType, runtimeLabel = None):
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, modeType, int(numberOfNeighbors), float(radius), int(kNearestNeighbors), graphType)
     if runtimeLabel:
       runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
     return True
    
-  def computeSurface(self, inputModelNode, depth, runtimeLabel = None):
+  def computeSurface(self, inputModelNode, depth, scale, solverDivide, isoDivide, samplesPerNode, confidence, verbose, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
     if not outputModelNode:
       outputModelNode = self.createOutputModelNode()
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth))
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), confidence, verbose)
     if runtimeLabel:
       runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
     return True
