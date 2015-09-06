@@ -98,53 +98,58 @@ float vtkSlicerPointSetProcessingCppLogic
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
 
-  vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
-  timer->StartTimer();
+  if (this->HasPoints(input))
+  {
+    vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+    timer->StartTimer();
 	
-  // vtkPointSetNormalEstimation
-  vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
-  normalEstimation->SetInputData(input->GetPolyData());
-  if (mode == vtkPointSetNormalEstimation::FIXED_NUMBER)
-  {
-    normalEstimation->SetModeToFixedNumber();
-    normalEstimation->SetNumberOfNeighbors(numberOfNeighbors);
-  }
-  else if (mode == vtkPointSetNormalEstimation::RADIUS)
-  {
-    normalEstimation->SetModeToRadius();
-    normalEstimation->SetRadius(radius);
-  }
-  else
-  {
-    vtkWarningMacro("Invalid mode! Should be either 0 (FIXED_NUMBER) or 1 (RADIUS).");
-    return 0;
-  }
+    // vtkPointSetNormalEstimation
+    vtkSmartPointer<vtkPointSetNormalEstimation> normalEstimation = vtkSmartPointer<vtkPointSetNormalEstimation>::New();
+    normalEstimation->SetInputData(input->GetPolyData());
+    if (mode == vtkPointSetNormalEstimation::FIXED_NUMBER)
+    {
+      normalEstimation->SetModeToFixedNumber();
+      normalEstimation->SetNumberOfNeighbors(numberOfNeighbors);
+    }
+    else if (mode == vtkPointSetNormalEstimation::RADIUS)
+    {
+      normalEstimation->SetModeToRadius();
+      normalEstimation->SetRadius(radius);
+    }
+    else
+    {
+      vtkWarningMacro("Invalid mode! Should be either 0 (FIXED_NUMBER) or 1 (RADIUS).");
+      return 0;
+    }
 
-  // vtkPointSetNormalOrientation
-  vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
-  normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort()); 
-  if (graphType == vtkPointSetNormalOrientation::KNN_GRAPH)
-  {
-    normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::KNN_GRAPH);
-    normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
-  }
-  else if (graphType == vtkPointSetNormalOrientation::RIEMANN_GRAPH)
-  {
-    normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::RIEMANN_GRAPH);
-  }
-  else
-  {
-    vtkWarningMacro("Invalid graphType! Should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
-    return 0;
-  }
+    // vtkPointSetNormalOrientation
+    vtkSmartPointer<vtkPointSetNormalOrientation> normalOrientationFilter = vtkSmartPointer<vtkPointSetNormalOrientation>::New();
+    normalOrientationFilter->SetInputConnection(normalEstimation->GetOutputPort()); 
+    if (graphType == vtkPointSetNormalOrientation::KNN_GRAPH)
+    {
+      normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::KNN_GRAPH);
+      normalOrientationFilter->SetKNearestNeighbors(kNearestNeighbors);
+    }
+    else if (graphType == vtkPointSetNormalOrientation::RIEMANN_GRAPH)
+    {
+      normalOrientationFilter->SetGraphFilterType(vtkPointSetNormalOrientation::RIEMANN_GRAPH);
+    }
+    else
+    {
+      vtkWarningMacro("Invalid graphType! Should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
+      return 0;
+    }
 
-  normalOrientationFilter->Update();	
+    normalOrientationFilter->Update();	
 
-  input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+    input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
 
-  timer->StopTimer();
-  float runtime = timer->GetElapsedTime();
-  return runtime;
+    timer->StopTimer();
+    float runtime = timer->GetElapsedTime();
+    return runtime;
+  }
+  vtkWarningMacro("Model contains no points!");
+  return 0;
 }
 
 //---------------------------------------------------------------------------
@@ -153,26 +158,31 @@ float vtkSlicerPointSetProcessingCppLogic
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
 
-  vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
-  timer->StartTimer();
+  if (this->HasPointNormals(input))
+  {
+    vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+    timer->StartTimer();
 
-  // vtkPoissonReconstruction
-  vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
-  poissonFilter->SetInputData(input->GetPolyData());
-  poissonFilter->SetDepth(depth);
-  poissonFilter->SetScale(scale);
-  poissonFilter->SetSolverDivide(solverDivide); 
-  poissonFilter->SetIsoDivide(isoDivide); 
-  poissonFilter->SetSamplesPerNode(samplesPerNode);
-  poissonFilter->SetConfidence(confidence); 
-  poissonFilter->SetVerbose(verbose);   
-  poissonFilter->Update();	
+    // vtkPoissonReconstruction
+    vtkSmartPointer<vtkPoissonReconstruction> poissonFilter = vtkSmartPointer<vtkPoissonReconstruction>::New();
+    poissonFilter->SetInputData(input->GetPolyData());
+    poissonFilter->SetDepth(depth);
+    poissonFilter->SetScale(scale);
+    poissonFilter->SetSolverDivide(solverDivide); 
+    poissonFilter->SetIsoDivide(isoDivide); 
+    poissonFilter->SetSamplesPerNode(samplesPerNode);
+    poissonFilter->SetConfidence(confidence); 
+    poissonFilter->SetVerbose(verbose);   
+    poissonFilter->Update();	
 
-  output->SetAndObservePolyData(poissonFilter->GetOutput());
+    output->SetAndObservePolyData(poissonFilter->GetOutput());
 
-  timer->StopTimer();
-  float runtime = timer->GetElapsedTime();
-  return runtime;
+    timer->StopTimer();
+    float runtime = timer->GetElapsedTime();
+    return runtime;
+  }
+  vtkWarningMacro("Points has no normals!");
+  return 0;
 }
 
 //---------------------------------------------------------------------------
@@ -338,3 +348,18 @@ bool vtkSlicerPointSetProcessingCppLogic
   std::cout << "Normals not found!" << std::endl;
   return false;
 }
+
+bool vtkSlicerPointSetProcessingCppLogic
+::HasPoints(vtkMRMLModelNode* input)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasPoints");
+
+	vtkPolyData* polydata = input->GetPolyData();
+
+  if (polydata->GetNumberOfPoints() > 0)
+  {
+     return true;
+  }
+  return false;
+}
+

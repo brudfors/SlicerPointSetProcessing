@@ -50,6 +50,7 @@ public:
   float ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verbose = 0);
   bool HasPointNormals(vtkMRMLModelNode* input);
   bool HasCellNormals(vtkMRMLModelNode* input);
+  bool HasPoints(vtkMRMLModelNode* input);
 
 protected:
   vtkSlicerPointSetProcessingCppLogic();
