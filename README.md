@@ -16,6 +16,5 @@ A module performing point-set processing tasks in 3D Slicer. Currently implement
 ## TODO
 * Update readme (inc. citations) and screenshot
 * Visualize normals
-* Verbose to PointSetProcessing (i.e. normals output)
-* Rename, SurfaceFromManifold
-* ToolTips
+* Rename, SurfaceFromUnorganizedPoints
+* Add ToolTips

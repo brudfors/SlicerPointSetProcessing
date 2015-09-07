@@ -14,11 +14,10 @@ class PointSetProcessingPy(ScriptedLoadableModule):
     self.parent.dependencies = []
     self.parent.contributors = ["Mikael Brudfors (brudfors@gmail.com)"] 
     self.parent.helpText = """
-    This is an example of scripted loadable module bundled in an extension.
+    This module reconstructs a surface from unorganized points. For more information see: https://github.com/brudfors/SlicerPointSetProcessing
     """
     self.parent.acknowledgementText = """
-    This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-    and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
+    Supported by projects IPT-2012-0401-300000, TEC2013-48251-C2-1-R, DTS14/00192 and FEDER funds. 
 """ # replace with organization, grant and thanks.
 
 ############################################################ PointSetProcessingPyWidget 
@@ -139,7 +138,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.depthSlider.minimum = 1
     self.depthSlider.maximum = 20
     self.depthSlider.value = 8
-    self.depthSlider.setToolTip('This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound. The default value for this parameter is 8.')
+    self.depthSlider.setToolTip('This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound.')
     parametersPoissonOutputFormLayout.addRow('Depth: ', self.depthSlider)
     
     self.scaleSlider = ctk.ctkSliderWidget()
@@ -148,7 +147,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.scaleSlider.minimum = 1
     self.scaleSlider.maximum = 10
     self.scaleSlider.value = 1.25
-    self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube.')
     parametersPoissonOutputFormLayout.addRow('Scale: ', self.scaleSlider)    
     
     self.solverDivideSlider = ctk.ctkSliderWidget()
@@ -157,7 +156,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.solverDivideSlider.minimum = 1
     self.solverDivideSlider.maximum = 20
     self.solverDivideSlider.value = 8
-    self.solverDivideSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    self.solverDivideSlider.setToolTip('Solver subdivision depth; This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)')
     parametersPoissonOutputFormLayout.addRow('Solver Divide: ', self.solverDivideSlider)   
     
     self.isoDivideSlider = ctk.ctkSliderWidget()
@@ -166,28 +165,28 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.isoDivideSlider.minimum = 1
     self.isoDivideSlider.maximum = 20
     self.isoDivideSlider.value = 8
-    self.isoDivideSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    self.isoDivideSlider.setToolTip('Iso-surface extraction subdivision depth; This integer argument specifies the depth at which a block isosurface extractor should be used to extract the iso-surface. Using this parameter helps reduce the memory overhead at the cost of a small increase in extraction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)')
     parametersPoissonOutputFormLayout.addRow('Iso Divide: ', self.isoDivideSlider)   
  
     self.samplesPerNodeSlider = ctk.ctkSliderWidget()
     self.samplesPerNodeSlider.setDecimals(2)
     self.samplesPerNodeSlider.singleStep = 0.1
     self.samplesPerNodeSlider.minimum = 1
-    self.samplesPerNodeSlider.maximum = 10
+    self.samplesPerNodeSlider.maximum = 30
     self.samplesPerNodeSlider.value = 1.0
-    self.samplesPerNodeSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube. The default value is 1.25.')
+    self.samplesPerNodeSlider.setToolTip('Minimum number of samples; This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used. For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.')
     parametersPoissonOutputFormLayout.addRow('Samples per Node: ', self.samplesPerNodeSlider)   
     
     self.confidenceComboBox = qt.QComboBox()
     self.confidenceComboBox.addItem('False')
     self.confidenceComboBox.addItem('True')  
-    self.confidenceComboBox.setToolTip('')    
+    self.confidenceComboBox.setToolTip('Enabling tells the reconstructor to use the size of the normals as confidence information. When the flag is not enabled, all normals are normalized to have unit-length prior to reconstruction.')    
     parametersPoissonOutputFormLayout.addRow('Confidence: ', self.confidenceComboBox)
    
     self.verboseComboBox = qt.QComboBox()
     self.verboseComboBox.addItem('False')
     self.verboseComboBox.addItem('True')  
-    self.verboseComboBox.setToolTip('')    
+    self.verboseComboBox.setToolTip('Enabling this flag provides a more verbose description of the running times and memory usages of individual components of the surface reconstructor.')    
     parametersPoissonOutputFormLayout.addRow('Verbose: ', self.verboseComboBox)
     
     self.computeSurfaceButton = qt.QPushButton("Compute Surface")
