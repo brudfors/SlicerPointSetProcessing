@@ -94,9 +94,14 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormals(vtkMRMLModelNode* input, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType)
+::ComputeNormals(vtkMRMLModelNode* input, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
+
+  if (verbose)
+  {
+    std::cout << "ComputeNormals(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ")" << std::endl;
+  }
 
   if (this->HasPoints(input))
   {
@@ -154,9 +159,14 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verbose)
+::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
+
+  if (verbose)
+  {
+    std::cout << "ComputeSurface(depth = " << depth << ", scale = " << scale << ", solverDivide = " << solverDivide << ", isoDivide = " << isoDivide << ", samplesPerNode = " << samplesPerNode << ", confidence = " << confidence << ", verboseAlgorithm =" << verboseAlgorithm << ")" << std::endl;
+  }
 
   if (this->HasPointNormals(input))
   {
@@ -172,7 +182,7 @@ float vtkSlicerPointSetProcessingCppLogic
     poissonFilter->SetIsoDivide(isoDivide); 
     poissonFilter->SetSamplesPerNode(samplesPerNode);
     poissonFilter->SetConfidence(confidence); 
-    poissonFilter->SetVerbose(verbose);   
+    poissonFilter->SetVerbose(verboseAlgorithm);   
     poissonFilter->Update();	
 
     output->SetAndObservePolyData(poissonFilter->GetOutput());
@@ -186,25 +196,26 @@ float vtkSlicerPointSetProcessingCppLogic
 }
 
 //---------------------------------------------------------------------------
-// From: http://www.paraview.org/Wiki/VTK/Examples/Cxx/PolyData/PolyDataExtractNormals
 bool vtkSlicerPointSetProcessingCppLogic
-::HasPointNormals(vtkMRMLModelNode* input)
+::HasPointNormals(vtkMRMLModelNode* input, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasPointNormals");
 
 	vtkPolyData* polydata = input->GetPolyData();
 
-  std::cout << "In GetPointNormals: " << polydata->GetNumberOfPoints() << std::endl;
-  std::cout << "Looking for point normals..." << std::endl;
+  if (verbose)
+  {
+    std::cout << "Looking for point normals..." << std::endl;
  
-  // Count points
-  vtkIdType numPoints = polydata->GetNumberOfPoints();
-  std::cout << "There are " << numPoints << " points." << std::endl;
+    // Count points
+    vtkIdType numPoints = polydata->GetNumberOfPoints();
+    std::cout << "There are " << numPoints << " points." << std::endl;
  
-  // Count triangles
-  vtkIdType numPolys = polydata->GetNumberOfPolys();
-  std::cout << "There are " << numPolys << " polys." << std::endl;
- 
+    // Count triangles
+    vtkIdType numPolys = polydata->GetNumberOfPolys();
+    std::cout << "There are " << numPolys << " polys." << std::endl;
+  }
+
   ////////////////////////////////////////////////////////////////
   // Double normals in an array
   vtkDoubleArray* normalDataDouble = vtkDoubleArray::SafeDownCast(polydata->GetPointData()->GetArray("Normals"));
@@ -212,7 +223,10 @@ bool vtkSlicerPointSetProcessingCppLogic
   if(normalDataDouble)
   {
     int nc = normalDataDouble->GetNumberOfTuples();
-    std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    }
     return true;
   }
  
@@ -223,7 +237,10 @@ bool vtkSlicerPointSetProcessingCppLogic
   if(normalDataFloat)
   {
     int nc = normalDataFloat->GetNumberOfTuples();
-    std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    }
     return true;
   }
  
@@ -233,7 +250,10 @@ bool vtkSlicerPointSetProcessingCppLogic
  
   if(normalsDouble)
   {
-    std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    }
     return true;
   }
  
@@ -243,7 +263,10 @@ bool vtkSlicerPointSetProcessingCppLogic
  
   if(normalsFloat)
   {
-    std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    }
     return true;
   }
  
@@ -252,40 +275,51 @@ bool vtkSlicerPointSetProcessingCppLogic
   vtkDataArray* normalsGeneric = polydata->GetPointData()->GetNormals(); 
   if(normalsGeneric)
   {
-    std::cout << "There are " << normalsGeneric->GetNumberOfTuples() << " normals in normalsGeneric" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << normalsGeneric->GetNumberOfTuples() << " normals in normalsGeneric" << std::endl;
+    }
  
     double testDouble[3];
     normalsGeneric->GetTuple(0, testDouble);
  
-    std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
+    if (verbose)
+    {
+      std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
+    }
     return true;
   }
  
  
   // If the function has not yet quit, there were none of these types of normals
-  std::cout << "Normals not found!" << std::endl;
+  if (verbose)
+  {
+    std::cout << "Normals not found!" << std::endl;
+  }
   return false;
 }
 
 //---------------------------------------------------------------------------
-// From: http://www.paraview.org/Wiki/VTK/Examples/Cxx/PolyData/PolyDataExtractNormals
 bool vtkSlicerPointSetProcessingCppLogic
-::HasCellNormals(vtkMRMLModelNode* input)
+::HasCellNormals(vtkMRMLModelNode* input, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasCellNormals");
 
 	vtkPolyData* polydata = input->GetPolyData();
 
-  std::cout << "Looking for cell normals..." << std::endl;
+  if (verbose)
+  {
+    std::cout << "Looking for cell normals..." << std::endl;
  
-  // Count points
-  vtkIdType numCells = polydata->GetNumberOfCells();
-  std::cout << "There are " << numCells << " cells." << std::endl;
+    // Count points
+    vtkIdType numCells = polydata->GetNumberOfCells();
+    std::cout << "There are " << numCells << " cells." << std::endl;
  
-  // Count triangles
-  vtkIdType numPolys = polydata->GetNumberOfPolys();
-  std::cout << "There are " << numPolys << " polys." << std::endl;
- 
+    // Count triangles
+    vtkIdType numPolys = polydata->GetNumberOfPolys();
+    std::cout << "There are " << numPolys << " polys." << std::endl;
+  }
+
   ////////////////////////////////////////////////////////////////
   // Double normals in an array
   vtkDoubleArray* normalDataDouble = vtkDoubleArray::SafeDownCast(polydata->GetCellData()->GetArray("Normals"));
@@ -293,7 +327,10 @@ bool vtkSlicerPointSetProcessingCppLogic
   if(normalDataDouble)
   {
     int nc = normalDataDouble->GetNumberOfTuples();
-    std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << nc << " components in normalDataDouble" << std::endl;
+    }
     return true;
   }
  
@@ -304,7 +341,10 @@ bool vtkSlicerPointSetProcessingCppLogic
   if(normalDataFloat)
   {
     int nc = normalDataFloat->GetNumberOfTuples();
-    std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << nc << " components in normalDataFloat" << std::endl;
+    }
     return true;
   }
  
@@ -314,7 +354,10 @@ bool vtkSlicerPointSetProcessingCppLogic
  
   if(normalsDouble)
   {
-    std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << normalsDouble->GetNumberOfComponents() << " components in normalsDouble" << std::endl;
+    }
     return true;
   }
  
@@ -324,7 +367,10 @@ bool vtkSlicerPointSetProcessingCppLogic
  
   if(normalsFloat)
   {
-    std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    if (verbose)
+    {
+      std::cout << "There are " << normalsFloat->GetNumberOfComponents() << " components in normalsFloat" << std::endl;
+    }
     return true;
   }
  
@@ -333,32 +379,42 @@ bool vtkSlicerPointSetProcessingCppLogic
   vtkDataArray* normalsGeneric = polydata->GetCellData()->GetNormals();
   if(normalsGeneric)
   {
-    std::cout << "There are " << normalsGeneric->GetNumberOfTuples()
-              << " normals in normalsGeneric" << std::endl;
- 
+    if (verbose)
+    {
+      std::cout << "There are " << normalsGeneric->GetNumberOfTuples() << " normals in normalsGeneric" << std::endl;
+    } 
     double testDouble[3];
     normalsGeneric->GetTuple(0, testDouble);
- 
-    std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
-
+    
+    if (verbose)
+    { 
+      std::cout << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << std::endl;
+    }
     return true;
   }
 
   // If the function has not yet quit, there were none of these types of normals
-  std::cout << "Normals not found!" << std::endl;
+  if (verbose)
+  {
+    std::cout << "Normals not found!" << std::endl;
+  }
   return false;
 }
 
 bool vtkSlicerPointSetProcessingCppLogic
-::HasPoints(vtkMRMLModelNode* input)
+::HasPoints(vtkMRMLModelNode* input, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::HasPoints");
 
 	vtkPolyData* polydata = input->GetPolyData();
+  if (verbose)
+  {
+    std::cout << "PolyData contains " << polydata->GetNumberOfPoints() << " points" << std::endl;
+  }
 
   if (polydata->GetNumberOfPoints() > 0)
   {
-     return true;
+    return true;
   }
   return false;
 }

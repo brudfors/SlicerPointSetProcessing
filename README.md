@@ -16,5 +16,6 @@ A module performing point-set processing tasks in 3D Slicer. Currently implement
 ## TODO
 * Update readme (inc. citations) and screenshot
 * Visualize normals
-* Fix test
-* Crash when loading model into module
+* Verbose to PointSetProcessing (i.e. normals output)
+* Rename, SurfaceFromManifold
+* ToolTips

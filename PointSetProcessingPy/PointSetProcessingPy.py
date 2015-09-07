@@ -113,7 +113,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.singleStep = 1
     self.knnSlider.minimum = 1
     self.knnSlider.maximum = 20
-    self.knnSlider.value = 3
+    self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
     parametersNormalsOutputFormLayout.addRow('Nearest Neighbors: ', self.knnSlider)
            
@@ -226,16 +226,14 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
       self.numberOfNeighborsSlider.enabled = True
       
   def onSelect(self):
-    logic = PointSetProcessingPyLogic()
     self.computeNormalsButton.enabled = self.inputSelector.currentNode()
-    self.computeSurfaceButton.enabled = logic.inputHasNormals(self.inputSelector.currentNode())
+    self.computeSurfaceButton.enabled = self.inputSelector.currentNode()
 
   def onComputeNormals(self):
     if self.computeNormalsButton.checked:
       logic = PointSetProcessingPyLogic()
       logic.computeNormals(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)
       self.computeNormalsButton.checked = False   
-      self.computeSurfaceButton.enabled = logic.inputHasNormals(self.inputSelector.currentNode())
       
   def onComputeSurface(self):
     if self.computeSurfaceButton.checked:
@@ -246,26 +244,20 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def computeNormals(self, inputModelNode, modeType, numberOfNeighbors, radius, kNearestNeighbors, graphType, runtimeLabel = None):
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, modeType, int(numberOfNeighbors), float(radius), int(kNearestNeighbors), graphType)
+  def computeNormals(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType))
     if runtimeLabel:
       runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
     return True
    
-  def computeSurface(self, inputModelNode, depth, scale, solverDivide, isoDivide, samplesPerNode, confidence, verbose, runtimeLabel = None):
+  def computeSurface(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
     if not outputModelNode:
       outputModelNode = self.createOutputModelNode()
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), confidence, verbose)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
     if runtimeLabel:
       runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
     return True
-    
-  def inputHasNormals(self, inputModelNode):
-    if not inputModelNode:
-      logging.info('inputHasNormals(): No input')
-      return False
-    return slicer.modules.pointsetprocessingcpp.logic().HasPointNormals(inputModelNode)
    
   def createOutputModelNode(self):
     scene = slicer.mrmlScene
@@ -298,6 +290,6 @@ class PointSetProcessingPyTest(ScriptedLoadableModuleTest):
     slicer.util.loadModel(pointSetProcessingPyModuleDirectoryPath + '../Data/SpherePoints.vtp', 'SpherePoints')
     inputModelNode = slicer.util.getNode('SpherePoints')
     logic = PointSetProcessingPyLogic()
-    self.assertTrue(logic.computeNormals(inputModelNode, 3, 'KNN'))        
-    self.assertTrue(logic.computeSurface(inputModelNode, 8))        
+    self.assertTrue(logic.computeNormals(inputModelNode))        
+    self.assertTrue(logic.computeSurface(inputModelNode))        
     self.delayDisplay('Testing module passed!')    
