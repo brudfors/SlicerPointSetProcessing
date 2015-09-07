@@ -153,7 +153,7 @@ float vtkSlicerPointSetProcessingCppLogic
     float runtime = timer->GetElapsedTime();
     return runtime;
   }
-  vtkWarningMacro("Model contains no points!");
+  vtkWarningMacro("Point data in vtkPolyData contains no points!");
   return 0;
 }
 
@@ -191,7 +191,7 @@ float vtkSlicerPointSetProcessingCppLogic
     float runtime = timer->GetElapsedTime();
     return runtime;
   }
-  vtkWarningMacro("Points has no normals!");
+  vtkWarningMacro("Point data in vtkPolyData contains no normals!");
   return 0;
 }
 
@@ -409,7 +409,7 @@ bool vtkSlicerPointSetProcessingCppLogic
 	vtkPolyData* polydata = input->GetPolyData();
   if (verbose)
   {
-    std::cout << "PolyData contains " << polydata->GetNumberOfPoints() << " points" << std::endl;
+    std::cout << "vtkPolyData contains " << polydata->GetNumberOfPoints() << " points" << std::endl;
   }
 
   if (polydata->GetNumberOfPoints() > 0)
