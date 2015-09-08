@@ -114,7 +114,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.maximum = 20
     self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
-    parametersNormalsOutputFormLayout.addRow('Nearest Neighbors: ', self.knnSlider)
+    parametersNormalsOutputFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
            
     self.computeNormalsButton = qt.QPushButton("Compute Normals")
     self.computeNormalsButton.enabled = False
