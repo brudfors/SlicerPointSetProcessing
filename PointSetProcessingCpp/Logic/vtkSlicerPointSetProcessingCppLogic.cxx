@@ -146,7 +146,8 @@ float vtkSlicerPointSetProcessingCppLogic
       return 0;
     }
     normalOrientationFilter->Update();	
-
+    input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+    
     if (addGlyphs)
     {
       vtkSmartPointer<vtkGlyph3D> glyph3D = vtkSmartPointer<vtkGlyph3D>::New();
@@ -158,7 +159,7 @@ float vtkSlicerPointSetProcessingCppLogic
     {
       output->SetAndObservePolyData(normalOrientationFilter->GetOutput());
     }
-    
+         
     timer->StopTimer();
     float runtime = timer->GetElapsedTime();
     return runtime;
