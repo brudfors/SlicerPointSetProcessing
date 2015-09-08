@@ -46,7 +46,7 @@ public:
   vtkTypeMacro(vtkSlicerPointSetProcessingCppLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  float ComputeNormals(vtkMRMLModelNode* input, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool verbose = false);
+  float ComputeNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool addGlyphs = false, bool verbose = false);
   float ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verboseAlgorithm = 0, bool verbose = false);
   bool HasPointNormals(vtkMRMLModelNode* input, bool verbose = false);
   bool HasCellNormals(vtkMRMLModelNode* input, bool verbose = false);

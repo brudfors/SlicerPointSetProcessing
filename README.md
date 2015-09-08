@@ -9,14 +9,14 @@ SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which reconstructs 
 ## Parameters
 Below are descriptions off each of the module parameters.
 
-### Normals
+### Compute Normals
 * **Mode**:
 * **Fixed Neighbors**:
 * **Radius**:
 * **K-Nearest Neighbors**:
 * **Graph Type**:
 
-### Surface
+### Compute Surface
 * **Depth**: This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound.
 * **Scale**: This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube.
 * **Solver Divide**: Solver subdivision depth; This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)

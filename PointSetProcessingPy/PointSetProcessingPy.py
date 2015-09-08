@@ -63,9 +63,9 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
                                            qproperty-alignment: AlignCenter}")
     runtimeFormLayout.addRow(self.runtimeLabel)
     
-    # Normals
+    # Compute Normals
     self.normalsGroupBox = ctk.ctkCollapsibleGroupBox()
-    self.normalsGroupBox.setTitle("Normals")
+    self.normalsGroupBox.setTitle("Compute Normals")
     normalsFormLayout = qt.QFormLayout(self.normalsGroupBox)
     pointSetProcessingFormLayout.addRow(self.normalsGroupBox)
     
@@ -116,14 +116,19 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.setToolTip('')
     parametersNormalsOutputFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
            
-    self.computeNormalsButton = qt.QPushButton("Compute Normals")
+    self.computeNormalsButton = qt.QPushButton("Apply")
     self.computeNormalsButton.enabled = False
     self.computeNormalsButton.checkable = True
     normalsFormLayout.addRow(self.computeNormalsButton)
     
-    # Surface
+    self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visible: ')
+    self.normalsVisibleCheckBox.checked = True
+    self.normalsVisibleCheckBox.enabled = True
+    normalsFormLayout.addRow(self.normalsVisibleCheckBox)
+    
+    # Compute Surface
     self.surfaceGroupBox = ctk.ctkCollapsibleGroupBox()
-    self.surfaceGroupBox.setTitle("Surface")
+    self.surfaceGroupBox.setTitle("Compute Surface")
     surfaceFormLayout = qt.QFormLayout(self.surfaceGroupBox)
     pointSetProcessingFormLayout.addRow(self.surfaceGroupBox)
     
@@ -189,10 +194,15 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.verboseComboBox.setToolTip('Enabling this flag provides a more verbose description of the running times and memory usages of individual components of the surface reconstructor.')    
     parametersPoissonOutputFormLayout.addRow('Verbose: ', self.verboseComboBox)
     
-    self.computeSurfaceButton = qt.QPushButton("Compute Surface")
+    self.computeSurfaceButton = qt.QPushButton("Apply")
     self.computeSurfaceButton.enabled = False
     self.computeSurfaceButton.checkable = True
-    surfaceFormLayout.addRow(self.computeSurfaceButton)
+    surfaceFormLayout.addRow(self.computeSurfaceButton)    
+        
+    self.surfaceVisibleCheckBox = qt.QCheckBox('Surface Visible: ')
+    self.surfaceVisibleCheckBox.checked = True
+    self.surfaceVisibleCheckBox.enabled = True
+    normalsFormLayout.addRow(self.surfaceVisibleCheckBox)
     
     # connections
     self.computeNormalsButton.connect('clicked(bool)', self.onComputeNormals)
@@ -200,7 +210,9 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
     self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
     self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeTypeChanged)
-    
+    self.surfaceVisibleCheckBox.connect('stateChanged(int)', self.onSurfaceVisible)
+    self.normalsVisibleCheckBox.connect('stateChanged(int)', self.onNormalsVisible)
+            
     # Add vertical spacer
     self.layout.addStretch(1)
 
@@ -209,6 +221,14 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
         
     lm=slicer.app.layoutManager()
     lm.setLayout(4) # One 3D-view    
+
+  def onSurfaceVisible(self, checked):
+    logic = PointSetProcessingPyLogic()
+    logic.surfaceVisible(checked)
+ 
+  def onNormalsVisible(self, checked):
+    logic = PointSetProcessingPyLogic()
+    logic.normalsVisible(checked)
     
   def onGraphTypeChanged(self, type):
     if type == 'KNN':
@@ -244,27 +264,40 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
   def computeNormals(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType))
+    outputModelNode = slicer.util.getNode('ComputedNormals')
+    if not outputModelNode:
+      outputModelNode = self.createOutputModelNode('ComputedNormals', [0, 1, 0])  
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True)
     if runtimeLabel:
       runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
     return True
    
   def computeSurface(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
-    outputModelNode = slicer.util.getNode('PointSetProcessingOutput')
+    outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
     if not outputModelNode:
-      outputModelNode = self.createOutputModelNode()
+      outputModelNode = self.createOutputModelNode('ComputedSurface')
     runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
     if runtimeLabel:
       runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
     return True
-   
-  def createOutputModelNode(self):
+
+  def surfaceVisible(self, visible):
+    modelNode = slicer.util.getNode('ComputedSurface')
+    if modelNode:  
+      modelNode.GetModelDisplayNode().SetVisibility(visible)
+ 
+  def normalsVisible(self, visible):
+    modelNode = slicer.util.getNode('ComputedNormals')
+    if modelNode:  
+      modelNode.GetModelDisplayNode().SetVisibility(visible)
+    
+  def createOutputModelNode(self, name, color):
     scene = slicer.mrmlScene
     outputModelNode = slicer.vtkMRMLModelNode()
     outputModelNode.SetScene(scene)
-    outputModelNode.SetName('PointSetProcessingOutput')
+    outputModelNode.SetName(name)
     modelDisplay = slicer.vtkMRMLModelDisplayNode()
-    modelDisplay.SetColor(1, 0, 0)
+    modelDisplay.SetColor(color)
     modelDisplay.SetScene(scene)
     scene.AddNode(modelDisplay)
     outputModelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())

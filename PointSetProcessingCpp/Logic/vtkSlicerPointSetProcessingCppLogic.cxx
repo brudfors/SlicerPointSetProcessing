@@ -26,6 +26,7 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGlyph3D.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -94,7 +95,7 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormals(vtkMRMLModelNode* input, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool verbose)
+::ComputeNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool addGlyphs, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
 
@@ -144,11 +145,20 @@ float vtkSlicerPointSetProcessingCppLogic
       vtkWarningMacro("Invalid graphType! Should be either 0 (RIEMANN_GRAPH) or 1 (KNN_GRAPH).");
       return 0;
     }
-
     normalOrientationFilter->Update();	
 
-    input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
-
+    if (addGlyphs)
+    {
+      vtkSmartPointer<vtkGlyph3D> glyph3D = vtkSmartPointer<vtkGlyph3D>::New();
+      glyph3D->SetInputData(normalOrientationFilter->GetOutput());
+      glyph3D->Update();
+      output->SetAndObservePolyData(glyph3D->GetOutput());
+    }
+    else
+    {
+      output->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+    }
+    
     timer->StopTimer();
     float runtime = timer->GetElapsedTime();
     return runtime;
