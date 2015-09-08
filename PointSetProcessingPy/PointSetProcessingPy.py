@@ -266,7 +266,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
   def computeNormals(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
-      outputModelNode = self.createOutputModelNode('ComputedNormals', [0, 1, 0])  
+      outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
     runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True)
     if runtimeLabel:
       runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
@@ -275,7 +275,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
   def computeSurface(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
     if not outputModelNode:
-      outputModelNode = self.createOutputModelNode('ComputedSurface')
+      outputModelNode = self.createModelNode('ComputedSurface')
     runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
     if runtimeLabel:
       runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
@@ -291,18 +291,18 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     if modelNode:  
       modelNode.GetModelDisplayNode().SetVisibility(visible)
     
-  def createOutputModelNode(self, name, color):
+  def createModelNode(self, name, color):
     scene = slicer.mrmlScene
-    outputModelNode = slicer.vtkMRMLModelNode()
-    outputModelNode.SetScene(scene)
-    outputModelNode.SetName(name)
+    modelNode = slicer.vtkMRMLModelNode()
+    modelNode.SetScene(scene)
+    modelNode.SetName(name)
     modelDisplay = slicer.vtkMRMLModelDisplayNode()
     modelDisplay.SetColor(color)
     modelDisplay.SetScene(scene)
     scene.AddNode(modelDisplay)
-    outputModelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())
-    scene.AddNode(outputModelNode)  
-    return outputModelNode
+    modelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())
+    scene.AddNode(modelNode)  
+    return modelNode
     
 ############################################################ PointSetProcessingPyTest    
 class PointSetProcessingPyTest(ScriptedLoadableModuleTest):
