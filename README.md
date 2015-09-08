@@ -7,7 +7,23 @@ SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which reconstructs 
 2. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
 
 ## Parameters
-* Parameter1
+Below are descriptions off each of the module parameters.
+
+### Normals
+* **Mode**:
+* **Fixed Neighbors**:
+* **Radius**:
+* **K-Nearest Neighbors**:
+* **Graph Type**:
+
+### Surface
+* **Depth**: This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound.
+* **Scale**: This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube.
+* **Solver Divide**: Solver subdivision depth; This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)
+* **Iso Divide**: Iso-surface extraction subdivision depth; This integer argument specifies the depth at which a block isosurface extractor should be used to extract the iso-surface. Using this parameter helps reduce the memory overhead at the cost of a small increase in extraction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)
+* **Samples Per Node**: Minimum number of samples; This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used. For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.
+* **Confidence**: Enabling tells the reconstructor to use the size of the normals as confidence information. When the flag is not enabled, all normals are normalized to have unit-length prior to reconstruction.
+* **Verbose**: Enabling this flag provides a more verbose description of the running times and memory usages of individual components of the surface reconstructor.
 
 ## Build Instructions
 1. **3D Slicer** - Follow the instructions found here: http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers/Build_Instructions
@@ -19,5 +35,6 @@ SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which reconstructs 
 ## TODO
 * Add params to readme and update screenshot
 * Visualize normals
-* Rename, SurfaceFromUnorganizedPoints
+* Rename to SurfaceFromUnorganizedPoints
 * Add ToolTips
+* Add VTK filters for normals and surface
