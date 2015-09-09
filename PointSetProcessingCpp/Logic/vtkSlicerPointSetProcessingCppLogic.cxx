@@ -24,6 +24,7 @@
 
 // VTK includes
 #include <vtkCellData.h>
+#include <vtkDelaunay3D.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGlyph3D.h>
@@ -31,6 +32,7 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkTimerLog.h>
 
 // STD includes
@@ -95,13 +97,13 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool addGlyphs, bool verbose)
+::ComputeNormalsPointSetNormal(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool addGlyphs, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormals");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormalsPointSetNormal");
 
   if (verbose)
   {
-    std::cout << "ComputeNormals(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ")" << std::endl;
+    std::cout << "ComputeNormalsPointSetNormal(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ")" << std::endl;
   }
 
   if (this->HasPoints(input))
@@ -170,7 +172,49 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeSurface(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
+::ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyph, bool verbose)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormalsPolyDataNormals");
+
+  if (verbose)
+  {
+    std::cout << "ComputeNormalsPolyDataNormals()" << std::endl;
+  }
+
+  if (this->HasPoints(input))
+  {
+    vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+    timer->StartTimer();
+	
+    vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New();
+    normals->SetInputData(input->GetPolyData());
+    // Params!  
+    normals->Update();	
+    input->SetAndObservePolyData(normals->GetOutput());
+    
+    if (addGlyphs)
+    {
+      vtkSmartPointer<vtkGlyph3D> glyph3D = vtkSmartPointer<vtkGlyph3D>::New();
+      glyph3D->SetInputData(normals->GetOutput());
+      glyph3D->Update();
+      output->SetAndObservePolyData(glyph3D->GetOutput());
+    }
+    else
+    {
+      output->SetAndObservePolyData(normals->GetOutput());
+    }
+    
+    timer->StopTimer();
+    float runtime = timer->GetElapsedTime();
+    return runtime;
+  }
+  vtkWarningMacro("Point data in vtkPolyData contains no points!");
+  return 0;
+}
+
+//---------------------------------------------------------------------------
+float vtkSlicerPointSetProcessingCppLogic
+::ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
 
@@ -203,6 +247,37 @@ float vtkSlicerPointSetProcessingCppLogic
     return runtime;
   }
   vtkWarningMacro("Point data in vtkPolyData contains no normals!");
+  return 0;
+}
+
+//---------------------------------------------------------------------------
+float vtkSlicerPointSetProcessingCppLogic
+::ComputeSurfaceDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool verbose)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurfaceDelaunay3D");
+
+  if (verbose)
+  {
+    std::cout << "ComputeSurfaceDelaunay3D()" << std::endl;
+  }
+
+  if (this->HasPoints(input)) // Normals not necessary here?
+  {
+    vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+    timer->StartTimer();
+	
+    vtkSmartPointer<vtkDelaunay3D> delaunay3D = vtkSmartPointer<vtkDelaunay3D>::New();
+    delaunay3D->SetInputData(input->GetPolyData());
+    // Params!  
+    delaunay3D->Update();	
+
+    output->SetAndObservePolyData(delaunay3D->GetOutput());
+      
+    timer->StopTimer();
+    float runtime = timer->GetElapsedTime();
+    return runtime;
+  }
+  vtkWarningMacro("Point data in vtkPolyData contains no points!");
   return 0;
 }
 

@@ -74,6 +74,14 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     parametersNormalsOutputFormLayout = qt.QFormLayout(self.parametersNormalsOutputGroupBox)
     normalsFormLayout.addRow(self.parametersNormalsOutputGroupBox)
 
+    self.normalsnormalsMethodComboBox = qt.QComboBox()
+    self.normalsMethodComboBox.addItem('vtkPolyDataNormals')  
+    self.normalsMethodComboBox.addItem('vtkPointSetNormal')
+    self.normalsMethodComboBox.setCurrentIndex(1)
+    self.normalsMethodComboBox.setToolTip('')    
+    parametersNormalsOutputFormLayout.addRow('Method: ', self.normalsMethodComboBox)
+
+    
     self.modeTypeComboBox = qt.QComboBox()
     self.modeTypeComboBox.addItem('Fixed')  
     self.modeTypeComboBox.addItem('Radius')
@@ -137,6 +145,13 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     parametersPoissonOutputFormLayout = qt.QFormLayout(self.parametersPoissonOutputGroupBox)
     surfaceFormLayout.addRow(self.parametersPoissonOutputGroupBox)
     
+    self.surfaceMethodComboBox = qt.QComboBox()
+    self.surfaceMethodComboBox.addItem('vtkDelaunay3D')  
+    self.surfaceMethodComboBox.addItem('vtkPoissionReconstruction')
+    self.surfaceMethodComboBox.setCurrentIndex(1)
+    self.surfaceMethodComboBox.setToolTip('')    
+    parametersPoissonOutputFormLayout.addRow('Method: ', self.surfaceMethodComboBox)
+        
     self.depthSlider = ctk.ctkSliderWidget()
     self.depthSlider.setDecimals(0)
     self.depthSlider.singleStep = 1
@@ -209,7 +224,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.computeSurfaceButton.connect('clicked(bool)', self.onComputeSurface)
     self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
     self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
-    self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeTypeChanged)
+    self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeChanged)
     self.surfaceVisibleCheckBox.connect('stateChanged(int)', self.onSurfaceVisible)
     self.normalsVisibleCheckBox.connect('stateChanged(int)', self.onNormalsVisible)
             
@@ -236,7 +251,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     elif type == 'Riemann':
       self.knnSlider.enabled = False
 
-  def onModeTypeChanged(self, type):
+  def onModeChanged(self, type):
     if type == 'Radius':
       self.radiusSlider.enabled = True
       self.numberOfNeighborsSlider.enabled = False
@@ -251,36 +266,60 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def onComputeNormals(self):
     if self.computeNormalsButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.computeNormals(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)
+      if self.normalsMethodComboBox.currentIndex: # vtkPointSetNormal
+        logic.computeNormalsPointSetNormal(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)
+      else: # vtkPolyDataNormals 
+        logic.computeNormalsPolyDataNormals(self.inputSelector.currentNode(), self.runtimeLabel)
       self.computeNormalsButton.checked = False   
       
   def onComputeSurface(self):
     if self.computeSurfaceButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.computeSurface(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
+      if self.surfaceMethodComboBox.currentIndex: # vtkPoissionReconstruction      
+        logic.computeSurfacePoissionReconstruction(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
+      else: # vtkDelaunay3D
+        logic.computeSurfaceDelaunay3D(self.inputSelector.currentNode(), self.runtimeLabel)
       self.computeSurfaceButton.checked = False         
 
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def computeNormals(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
+  def computeNormalsPointSetNormal(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormals(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True)
     if runtimeLabel:
-      runtimeLabel.setText('Normals computed in  %.2f' % runtime + ' s.')
+      runtimeLabel.setText('vtkPointSetNormal computed in  %.2f' % runtime + ' s.')
     return True
    
-  def computeSurface(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+  def computeNormalsPolyDataNormals(self, inputModelNode, runtimeLabel = None):
+    outputModelNode = slicer.util.getNode('ComputedNormals')
+    if not outputModelNode:
+      outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPolyDataNormals(inputModelNode, outputModelNode)
+    if runtimeLabel:
+      runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
+    return True
+   
+  def computeSurfaceDelaunay3D(self, inputModelNode, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface')
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurface(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfaceDelaunay3D(inputModelNode, outputModelNode)
     if runtimeLabel:
-      runtimeLabel.setText('Surface computed in %.2f' % runtime + ' s.')
+      runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
     return True
 
+  def computeSurfacePoissionReconstruction(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+    outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
+    if not outputModelNode:
+      outputModelNode = self.createModelNode('ComputedSurface')
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfacePoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
+    if runtimeLabel:
+      runtimeLabel.setText('vtkPoissionReconstruction computed in %.2f' % runtime + ' s.')
+    return True
+    
   def surfaceVisible(self, visible):
     modelNode = slicer.util.getNode('ComputedSurface')
     if modelNode:  

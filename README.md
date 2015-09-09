@@ -1,10 +1,12 @@
 # SlicerSurfaceFromUnorganizedPoints
 ![Alt text](https://github.com/brudfors/SlicerPointSetProcessing/blob/master/PointSetProcessingScreenShot.PNG?raw=true "SlicerPointSetProcessing")
 
-SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which reconstructs a surface from a set of unorganized points. The first step of the reconstruction is to approximate the normals of the point set and their orientaion [1]. Next, the surface reconstruction is perfomed which is based on [2]. The VTK implementations were done by David Doria (with minor changes/improvements by me).
+SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which reconstructs a surface from a set of unorganized points. The first step of the reconstruction is to approximate the normals of the point set and their orientaion [1]. Next, the surface reconstruction is performed, which can be either a Possion surface reconstruction [2, 3] or a Delaunay triangulation [4].
 
 1. Hoppe, Hugues, et al. Surface reconstruction from unorganized points. Vol. 26. No. 2. ACM, 1992.
 2. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
+3. Doria D., Gelas A. Poisson Surface Reconstruction for VTK. 2010 Mar (with minor changes/improvements by me)
+4. http://www.vtk.org/doc/nightly/html/classvtkDelaunay3D.html 
 
 ## Parameters
 Below are descriptions off each of the module parameters.
@@ -38,3 +40,4 @@ Below are descriptions off each of the module parameters.
 * Rename to SurfaceFromUnorganizedPoints
 * Add ToolTips
 * Add VTK filters for normals and surface
+* Use tabs for different methods
