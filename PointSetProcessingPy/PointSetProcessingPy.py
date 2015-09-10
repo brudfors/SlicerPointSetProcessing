@@ -69,25 +69,20 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     normalsFormLayout = qt.QFormLayout(self.normalsGroupBox)
     pointSetProcessingFormLayout.addRow(self.normalsGroupBox)
     
-    self.parametersNormalsOutputGroupBox = qt.QGroupBox()
-    self.parametersNormalsOutputGroupBox.setTitle("Parameters")
-    parametersNormalsOutputFormLayout = qt.QFormLayout(self.parametersNormalsOutputGroupBox)
-    normalsFormLayout.addRow(self.parametersNormalsOutputGroupBox)
-
-    self.normalsMethodComboBox = qt.QComboBox()
-    self.normalsMethodComboBox.addItem('vtkPolyDataNormals')  
-    self.normalsMethodComboBox.addItem('vtkPointSetNormal')
-    self.normalsMethodComboBox.setCurrentIndex(1)
-    self.normalsMethodComboBox.setToolTip('')    
-    parametersNormalsOutputFormLayout.addRow('Method: ', self.normalsMethodComboBox)
-
-    
+    self.normalsTabWidget = qt.QTabWidget()
+    normalsFormLayout.addRow(self.normalsTabWidget)
+          
+    self.vtkPointSetNormalWidget = qt.QWidget()
+    vtkPointSetNormalFormLayout = qt.QFormLayout(self.vtkPointSetNormalWidget)
+    normalsFormLayout.addRow(self.vtkPointSetNormalWidget)
+    self.normalsTabWidget.addTab(self.vtkPointSetNormalWidget, "vtkPointSetNormal")    
+        
     self.modeTypeComboBox = qt.QComboBox()
     self.modeTypeComboBox.addItem('Fixed')  
     self.modeTypeComboBox.addItem('Radius')
     self.modeTypeComboBox.setCurrentIndex(1)
     self.modeTypeComboBox.setToolTip('')    
-    parametersNormalsOutputFormLayout.addRow('Mode Type: ', self.modeTypeComboBox)
+    vtkPointSetNormalFormLayout.addRow('Mode Type: ', self.modeTypeComboBox)
     
     self.numberOfNeighborsSlider = ctk.ctkSliderWidget()
     self.numberOfNeighborsSlider.setDecimals(0)
@@ -97,7 +92,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.numberOfNeighborsSlider.value = 4
     self.numberOfNeighborsSlider.setToolTip('')
     self.numberOfNeighborsSlider.enabled = False
-    parametersNormalsOutputFormLayout.addRow('Fixed Neighbors: ', self.numberOfNeighborsSlider)
+    vtkPointSetNormalFormLayout.addRow('Fixed Neighbors: ', self.numberOfNeighborsSlider)
     
     self.radiusSlider = ctk.ctkSliderWidget()
     self.radiusSlider.setDecimals(2)
@@ -106,14 +101,14 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.radiusSlider.maximum = 10
     self.radiusSlider.value = 1.0
     self.radiusSlider.setToolTip('')
-    parametersNormalsOutputFormLayout.addRow('Radius: ', self.radiusSlider)
+    vtkPointSetNormalFormLayout.addRow('Radius: ', self.radiusSlider)
     
     self.graphTypeComboBox = qt.QComboBox()
     self.graphTypeComboBox.addItem('Riemann')  
     self.graphTypeComboBox.addItem('KNN')
     self.graphTypeComboBox.setCurrentIndex(1)
     self.graphTypeComboBox.setToolTip('')    
-    parametersNormalsOutputFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
+    vtkPointSetNormalFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
     
     self.knnSlider = ctk.ctkSliderWidget()
     self.knnSlider.setDecimals(0)
@@ -122,12 +117,17 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.maximum = 20
     self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
-    parametersNormalsOutputFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
+    vtkPointSetNormalFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
     
-    self.computeNormalsButton = qt.QPushButton("Apply")
-    self.computeNormalsButton.enabled = False
-    self.computeNormalsButton.checkable = True
-    normalsFormLayout.addRow(self.computeNormalsButton)    
+    self.vtkPointSetNormalButton = qt.QPushButton("Apply")
+    self.vtkPointSetNormalButton.enabled = False
+    self.vtkPointSetNormalButton.checkable = True
+    vtkPointSetNormalFormLayout.addRow(self.vtkPointSetNormalButton)    
+
+    self.vtkPolyDataNormalsWidget = qt.QWidget()
+    vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkPolyDataNormalsWidget)
+    normalsFormLayout.addRow(self.vtkPolyDataNormalsWidget)
+    self.normalsTabWidget.addTab(self.vtkPolyDataNormalsWidget, "vtkPolyDataNormals") 
     
     self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visible: ')
     self.normalsVisibleCheckBox.checked = True
@@ -140,19 +140,15 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.surfaceGroupBox.setTitle("Compute Surface")
     surfaceFormLayout = qt.QFormLayout(self.surfaceGroupBox)
     pointSetProcessingFormLayout.addRow(self.surfaceGroupBox)
+
+    self.surfaceTabWidget = qt.QTabWidget()
+    surfaceFormLayout.addRow(self.surfaceTabWidget)
+          
+    self.vtkPoissionReconstructionWidget = qt.QWidget()
+    vtkPoissionReconstructionFormLayout = qt.QFormLayout(self.vtkPoissionReconstructionWidget)
+    surfaceFormLayout.addRow(self.vtkPoissionReconstructionWidget)
+    self.surfaceTabWidget.addTab(self.vtkPoissionReconstructionWidget, "vtkPoissionReconstruction")   
     
-    self.parametersPoissonOutputGroupBox = qt.QGroupBox()
-    self.parametersPoissonOutputGroupBox.setTitle("Parameters")
-    parametersPoissonOutputFormLayout = qt.QFormLayout(self.parametersPoissonOutputGroupBox)
-    surfaceFormLayout.addRow(self.parametersPoissonOutputGroupBox)
-    
-    self.surfaceMethodComboBox = qt.QComboBox()
-    self.surfaceMethodComboBox.addItem('vtkDelaunay3D')  
-    self.surfaceMethodComboBox.addItem('vtkPoissionReconstruction')
-    self.surfaceMethodComboBox.setCurrentIndex(1)
-    self.surfaceMethodComboBox.setToolTip('')    
-    parametersPoissonOutputFormLayout.addRow('Method: ', self.surfaceMethodComboBox)
-        
     self.depthSlider = ctk.ctkSliderWidget()
     self.depthSlider.setDecimals(0)
     self.depthSlider.singleStep = 1
@@ -160,7 +156,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.depthSlider.maximum = 20
     self.depthSlider.value = 8
     self.depthSlider.setToolTip('This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound.')
-    parametersPoissonOutputFormLayout.addRow('Depth: ', self.depthSlider)
+    vtkPoissionReconstructionFormLayout.addRow('Depth: ', self.depthSlider)
     
     self.scaleSlider = ctk.ctkSliderWidget()
     self.scaleSlider.setDecimals(2)
@@ -169,7 +165,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.scaleSlider.maximum = 10
     self.scaleSlider.value = 1.25
     self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube.')
-    parametersPoissonOutputFormLayout.addRow('Scale: ', self.scaleSlider)    
+    vtkPoissionReconstructionFormLayout.addRow('Scale: ', self.scaleSlider)    
     
     self.solverDivideSlider = ctk.ctkSliderWidget()
     self.solverDivideSlider.setDecimals(0)
@@ -178,7 +174,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.solverDivideSlider.maximum = 20
     self.solverDivideSlider.value = 8
     self.solverDivideSlider.setToolTip('Solver subdivision depth; This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)')
-    parametersPoissonOutputFormLayout.addRow('Solver Divide: ', self.solverDivideSlider)   
+    vtkPoissionReconstructionFormLayout.addRow('Solver Divide: ', self.solverDivideSlider)   
     
     self.isoDivideSlider = ctk.ctkSliderWidget()
     self.isoDivideSlider.setDecimals(0)
@@ -187,7 +183,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.isoDivideSlider.maximum = 20
     self.isoDivideSlider.value = 8
     self.isoDivideSlider.setToolTip('Iso-surface extraction subdivision depth; This integer argument specifies the depth at which a block isosurface extractor should be used to extract the iso-surface. Using this parameter helps reduce the memory overhead at the cost of a small increase in extraction time. (In practice, we have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can greatly reduce the memory usage.)')
-    parametersPoissonOutputFormLayout.addRow('Iso Divide: ', self.isoDivideSlider)   
+    vtkPoissionReconstructionFormLayout.addRow('Iso Divide: ', self.isoDivideSlider)   
  
     self.samplesPerNodeSlider = ctk.ctkSliderWidget()
     self.samplesPerNodeSlider.setDecimals(2)
@@ -196,25 +192,30 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.samplesPerNodeSlider.maximum = 30
     self.samplesPerNodeSlider.value = 1.0
     self.samplesPerNodeSlider.setToolTip('Minimum number of samples; This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used. For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.')
-    parametersPoissonOutputFormLayout.addRow('Samples per Node: ', self.samplesPerNodeSlider)   
+    vtkPoissionReconstructionFormLayout.addRow('Samples per Node: ', self.samplesPerNodeSlider)   
     
     self.confidenceComboBox = qt.QComboBox()
     self.confidenceComboBox.addItem('False')
     self.confidenceComboBox.addItem('True')  
     self.confidenceComboBox.setToolTip('Enabling tells the reconstructor to use the size of the normals as confidence information. When the flag is not enabled, all normals are normalized to have unit-length prior to reconstruction.')    
-    parametersPoissonOutputFormLayout.addRow('Confidence: ', self.confidenceComboBox)
+    vtkPoissionReconstructionFormLayout.addRow('Confidence: ', self.confidenceComboBox)
    
     self.verboseComboBox = qt.QComboBox()
     self.verboseComboBox.addItem('False')
     self.verboseComboBox.addItem('True')  
     self.verboseComboBox.setToolTip('Enabling this flag provides a more verbose description of the running times and memory usages of individual components of the surface reconstructor.')    
-    parametersPoissonOutputFormLayout.addRow('Verbose: ', self.verboseComboBox)
+    vtkPoissionReconstructionFormLayout.addRow('Verbose: ', self.verboseComboBox)
     
-    self.computeSurfaceButton = qt.QPushButton("Apply")
-    self.computeSurfaceButton.enabled = False
-    self.computeSurfaceButton.checkable = True
-    surfaceFormLayout.addRow(self.computeSurfaceButton)    
+    self.vtkPoissionReconstructionButton = qt.QPushButton("Apply")
+    self.vtkPoissionReconstructionButton.enabled = False
+    self.vtkPoissionReconstructionButton.checkable = True
+    vtkPoissionReconstructionFormLayout.addRow(self.vtkPoissionReconstructionButton)    
 
+    self.vtkDelaunay3DWidget = qt.QWidget()
+    vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkDelaunay3DWidget)
+    surfaceFormLayout.addRow(self.vtkDelaunay3DWidget)
+    self.surfaceTabWidget.addTab(self.vtkDelaunay3DWidget, "vtkDelaunay3D") 
+    
     self.surfaceVisibleCheckBox = qt.QCheckBox(' Surface Visible')
     self.surfaceVisibleCheckBox.checked = True
     self.surfaceVisibleCheckBox.enabled = True
@@ -222,8 +223,8 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     surfaceFormLayout.addRow(self.surfaceVisibleCheckBox)
     
     # connections
-    self.computeNormalsButton.connect('clicked(bool)', self.onComputeNormals)
-    self.computeSurfaceButton.connect('clicked(bool)', self.onComputeSurface)
+    self.vtkPointSetNormalButton.connect('clicked(bool)', self.vtkPointSetNormalButtonClicked)
+    self.vtkPoissionReconstructionButton.connect('clicked(bool)', self.vtkPoissionReconstructionClicked)
     self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
     self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
     self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeChanged)
@@ -262,35 +263,29 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
       self.numberOfNeighborsSlider.enabled = True
       
   def onSelect(self):
-    self.computeNormalsButton.enabled = self.inputSelector.currentNode()
-    self.computeSurfaceButton.enabled = self.inputSelector.currentNode()
+    self.vtkPointSetNormalButton.enabled = self.inputSelector.currentNode()
+    self.vtkPoissionReconstructionButton.enabled = self.inputSelector.currentNode()
 
-  def onComputeNormals(self):
-    if self.computeNormalsButton.checked:
+  def vtkPointSetNormalButtonClicked(self):
+    if self.vtkPointSetNormalButton.checked:
       logic = PointSetProcessingPyLogic()
-      if self.normalsMethodComboBox.currentIndex: # vtkPointSetNormal
-        logic.computeNormalsPointSetNormal(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)
-      else: # vtkPolyDataNormals 
-        logic.computeNormalsPolyDataNormals(self.inputSelector.currentNode(), self.runtimeLabel)
-      self.computeNormalsButton.checked = False   
+      logic.vtkPointSetNormal(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)        
+      self.vtkPointSetNormalButton.checked = False   
       
-  def onComputeSurface(self):
-    if self.computeSurfaceButton.checked:
-      logic = PointSetProcessingPyLogic()
-      if self.surfaceMethodComboBox.currentIndex: # vtkPoissionReconstruction      
-        logic.computeSurfacePoissionReconstruction(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
-      else: # vtkDelaunay3D
-        logic.computeSurfaceDelaunay3D(self.inputSelector.currentNode(), self.runtimeLabel)
-      self.computeSurfaceButton.checked = False         
+  def vtkPoissionReconstructionClicked(self):
+    if self.vtkPoissionReconstructionButton.checked:
+      logic = PointSetProcessingPyLogic()  
+      logic.vtkPoissionReconstruction(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
+      self.vtkPoissionReconstructionButton.checked = False         
 
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def computeNormalsPointSetNormal(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
+  def vtkPointSetNormal(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), False, True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPointSetNormal computed in  %.2f' % runtime + ' s.')
     return True
@@ -313,7 +308,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
       runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
     return True
 
-  def computeSurfacePoissionReconstruction(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+  def vtkPoissionReconstruction(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
