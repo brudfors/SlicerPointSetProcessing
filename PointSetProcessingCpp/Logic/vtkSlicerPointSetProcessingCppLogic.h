@@ -47,7 +47,7 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   float ComputeNormalsPointSetNormal(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool addGlyphs = false, bool verbose = false);
-  float ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyph = false, bool verbose = false);
+  float ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyphs = false, bool verbose = false);
   
   float ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verboseAlgorithm = 0, bool verbose = false);
   float ComputeSurfaceDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool verbose = false);

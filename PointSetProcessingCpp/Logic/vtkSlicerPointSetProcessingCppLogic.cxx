@@ -103,7 +103,7 @@ float vtkSlicerPointSetProcessingCppLogic
 
   if (verbose)
   {
-    std::cout << "ComputeNormalsPointSetNormal(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ")" << std::endl;
+    std::cout << "ComputeNormalsPointSetNormal(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ", addGlyphs = " << addGlyphs << ", verbose = " << verbose << ")" << std::endl;
   }
 
   if (this->HasPoints(input))
@@ -172,7 +172,7 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyph, bool verbose)
+::ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyphs, bool verbose)
 {
   vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormalsPolyDataNormals");
 
@@ -216,11 +216,11 @@ float vtkSlicerPointSetProcessingCppLogic
 float vtkSlicerPointSetProcessingCppLogic
 ::ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurface");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurfacePoissionReconstruction");
 
   if (verbose)
   {
-    std::cout << "ComputeSurface(depth = " << depth << ", scale = " << scale << ", solverDivide = " << solverDivide << ", isoDivide = " << isoDivide << ", samplesPerNode = " << samplesPerNode << ", confidence = " << confidence << ", verboseAlgorithm =" << verboseAlgorithm << ")" << std::endl;
+    std::cout << "ComputeSurfacePoissionReconstruction(depth = " << depth << ", scale = " << scale << ", solverDivide = " << solverDivide << ", isoDivide = " << isoDivide << ", samplesPerNode = " << samplesPerNode << ", confidence = " << confidence << ", verboseAlgorithm =" << verboseAlgorithm << ", verbose =" << verbose << ")" << std::endl;
   }
 
   if (this->HasPointNormals(input))
@@ -266,12 +266,18 @@ float vtkSlicerPointSetProcessingCppLogic
     vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
     timer->StartTimer();
 	
+    //// Clean the polydata. This will remove duplicate points that may be
+    //// present in the input data.
+    //vtkSmartPointer<vtkCleanPolyData> cleaner =
+    //vtkSmartPointer<vtkCleanPolyData>::New();
+    //cleaner->SetInputConnection (reader->GetOutputPort());
+
     vtkSmartPointer<vtkDelaunay3D> delaunay3D = vtkSmartPointer<vtkDelaunay3D>::New();
     delaunay3D->SetInputData(input->GetPolyData());
     // Params!  
     delaunay3D->Update();	
 
-    output->SetAndObservePolyData(delaunay3D->GetOutput());
+    //output->SetAndObservePolyData(delaunay3D->GetOutput());
       
     timer->StopTimer();
     float runtime = timer->GetElapsedTime();

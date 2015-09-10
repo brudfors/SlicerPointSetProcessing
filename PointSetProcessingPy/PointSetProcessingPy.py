@@ -74,7 +74,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     parametersNormalsOutputFormLayout = qt.QFormLayout(self.parametersNormalsOutputGroupBox)
     normalsFormLayout.addRow(self.parametersNormalsOutputGroupBox)
 
-    self.normalsnormalsMethodComboBox = qt.QComboBox()
+    self.normalsMethodComboBox = qt.QComboBox()
     self.normalsMethodComboBox.addItem('vtkPolyDataNormals')  
     self.normalsMethodComboBox.addItem('vtkPointSetNormal')
     self.normalsMethodComboBox.setCurrentIndex(1)
@@ -123,15 +123,16 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
     parametersNormalsOutputFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
-           
+    
     self.computeNormalsButton = qt.QPushButton("Apply")
     self.computeNormalsButton.enabled = False
     self.computeNormalsButton.checkable = True
-    normalsFormLayout.addRow(self.computeNormalsButton)
+    normalsFormLayout.addRow(self.computeNormalsButton)    
     
     self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visible: ')
     self.normalsVisibleCheckBox.checked = True
     self.normalsVisibleCheckBox.enabled = True
+    self.normalsVisibleCheckBox.setLayoutDirection(1)
     normalsFormLayout.addRow(self.normalsVisibleCheckBox)
     
     # Compute Surface
@@ -213,11 +214,12 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.computeSurfaceButton.enabled = False
     self.computeSurfaceButton.checkable = True
     surfaceFormLayout.addRow(self.computeSurfaceButton)    
-        
-    self.surfaceVisibleCheckBox = qt.QCheckBox('Surface Visible: ')
+
+    self.surfaceVisibleCheckBox = qt.QCheckBox(' Surface Visible')
     self.surfaceVisibleCheckBox.checked = True
     self.surfaceVisibleCheckBox.enabled = True
-    normalsFormLayout.addRow(self.surfaceVisibleCheckBox)
+    self.surfaceVisibleCheckBox.setLayoutDirection(1)
+    surfaceFormLayout.addRow(self.surfaceVisibleCheckBox)
     
     # connections
     self.computeNormalsButton.connect('clicked(bool)', self.onComputeNormals)
@@ -237,13 +239,13 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     lm=slicer.app.layoutManager()
     lm.setLayout(4) # One 3D-view    
 
-  def onSurfaceVisible(self, checked):
+  def onSurfaceVisible(self, state):
     logic = PointSetProcessingPyLogic()
-    logic.surfaceVisible(checked)
+    logic.setModelVisibility('ComputedSurface', self.surfaceVisibleCheckBox.checked)
  
-  def onNormalsVisible(self, checked):
+  def onNormalsVisible(self, state):
     logic = PointSetProcessingPyLogic()
-    logic.normalsVisible(checked)
+    logic.setModelVisibility('ComputedNormals', self.normalsVisibleCheckBox.checked)
     
   def onGraphTypeChanged(self, type):
     if type == 'KNN':
@@ -288,7 +290,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPointSetNormal computed in  %.2f' % runtime + ' s.')
     return True
@@ -303,32 +305,27 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     return True
    
   def computeSurfaceDelaunay3D(self, inputModelNode, runtimeLabel = None):
-    outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
+    outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
-      outputModelNode = self.createModelNode('ComputedSurface')
+      outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
     runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfaceDelaunay3D(inputModelNode, outputModelNode)
     if runtimeLabel:
       runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
     return True
 
   def computeSurfacePoissionReconstruction(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
-    outputModelNode = slicer.util.getNode('ComputedSurface', [1, 0, 0])
+    outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
-      outputModelNode = self.createModelNode('ComputedSurface')
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfacePoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose))
+      outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfacePoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose), True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPoissionReconstruction computed in %.2f' % runtime + ' s.')
     return True
     
-  def surfaceVisible(self, visible):
-    modelNode = slicer.util.getNode('ComputedSurface')
+  def setModelVisibility(self, name, visible):
+    modelNode = slicer.util.getNode(name)
     if modelNode:  
-      modelNode.GetModelDisplayNode().SetVisibility(visible)
- 
-  def normalsVisible(self, visible):
-    modelNode = slicer.util.getNode('ComputedNormals')
-    if modelNode:  
-      modelNode.GetModelDisplayNode().SetVisibility(visible)
+      modelNode.SetDisplayVisibility(visible)
     
   def createModelNode(self, name, color):
     scene = slicer.mrmlScene
