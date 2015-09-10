@@ -36,8 +36,8 @@ Below are descriptions off each of the module parameters.
 
 ## TODO
 * Add params to readme and update screenshot
-* Visualize normals
+* Visualize normals: Size from UI, color
 * Rename to SurfaceFromUnorganizedPoints
 * Add ToolTips
 * Add VTK filters for normals and surface
-* Use tabs for different methods
+* If there is interest: Reset to default, save params in Slicer.ini, calculate in separate thread

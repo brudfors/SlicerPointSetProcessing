@@ -71,7 +71,8 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     
     self.normalsTabWidget = qt.QTabWidget()
     normalsFormLayout.addRow(self.normalsTabWidget)
-          
+
+    # vtkPointSetNormal
     self.vtkPointSetNormalWidget = qt.QWidget()
     vtkPointSetNormalFormLayout = qt.QFormLayout(self.vtkPointSetNormalWidget)
     normalsFormLayout.addRow(self.vtkPointSetNormalWidget)
@@ -124,12 +125,13 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.vtkPointSetNormalButton.checkable = True
     vtkPointSetNormalFormLayout.addRow(self.vtkPointSetNormalButton)    
 
+    # vtkPolyDataNormals
     self.vtkPolyDataNormalsWidget = qt.QWidget()
     vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkPolyDataNormalsWidget)
     normalsFormLayout.addRow(self.vtkPolyDataNormalsWidget)
     self.normalsTabWidget.addTab(self.vtkPolyDataNormalsWidget, "vtkPolyDataNormals") 
     
-    self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visible: ')
+    self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visibility: ')
     self.normalsVisibleCheckBox.checked = True
     self.normalsVisibleCheckBox.enabled = True
     self.normalsVisibleCheckBox.setLayoutDirection(1)
@@ -143,7 +145,8 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 
     self.surfaceTabWidget = qt.QTabWidget()
     surfaceFormLayout.addRow(self.surfaceTabWidget)
-          
+    
+    # vtkPoissionReconstruction    
     self.vtkPoissionReconstructionWidget = qt.QWidget()
     vtkPoissionReconstructionFormLayout = qt.QFormLayout(self.vtkPoissionReconstructionWidget)
     surfaceFormLayout.addRow(self.vtkPoissionReconstructionWidget)
@@ -211,12 +214,13 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.vtkPoissionReconstructionButton.checkable = True
     vtkPoissionReconstructionFormLayout.addRow(self.vtkPoissionReconstructionButton)    
 
+    # vtkDelaunay3D
     self.vtkDelaunay3DWidget = qt.QWidget()
     vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkDelaunay3DWidget)
     surfaceFormLayout.addRow(self.vtkDelaunay3DWidget)
     self.surfaceTabWidget.addTab(self.vtkDelaunay3DWidget, "vtkDelaunay3D") 
     
-    self.surfaceVisibleCheckBox = qt.QCheckBox(' Surface Visible')
+    self.surfaceVisibleCheckBox = qt.QCheckBox('Surface Visibility: ')
     self.surfaceVisibleCheckBox.checked = True
     self.surfaceVisibleCheckBox.enabled = True
     self.surfaceVisibleCheckBox.setLayoutDirection(1)
@@ -285,7 +289,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), False, True)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPointSetNormal computed in  %.2f' % runtime + ' s.')
     return True

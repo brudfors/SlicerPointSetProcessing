@@ -35,6 +35,7 @@
 #include "vtkSlicerPointSetProcessingCppModuleLogicExport.h"
 
 class vtkMRMLModelNode;
+class vtkPolyData;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_POINTSETPROCESSINGCPP_MODULE_LOGIC_EXPORT vtkSlicerPointSetProcessingCppLogic :
@@ -52,10 +53,6 @@ public:
   float ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verboseAlgorithm = 0, bool verbose = false);
   float ComputeSurfaceDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool verbose = false);
   
-  bool HasPointNormals(vtkMRMLModelNode* input, bool verbose = false);
-  bool HasCellNormals(vtkMRMLModelNode* input, bool verbose = false);
-  bool HasPoints(vtkMRMLModelNode* input, bool verbose = false);
-
 protected:
   vtkSlicerPointSetProcessingCppLogic();
   virtual ~vtkSlicerPointSetProcessingCppLogic();
@@ -67,6 +64,11 @@ protected:
   virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
   virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
 private:
+
+  bool HasPointNormals(vtkMRMLModelNode* input, bool verbose = false);
+  bool HasCellNormals(vtkMRMLModelNode* input, bool verbose = false);
+  bool HasPoints(vtkMRMLModelNode* input, bool verbose = false);
+  void OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, int scaleFactor = 1, double tolerance = 0.1);
 
   vtkSlicerPointSetProcessingCppLogic(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented
   void operator=(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented
