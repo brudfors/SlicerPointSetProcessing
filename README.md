@@ -10,14 +10,6 @@ In order to perform the Poisson surface reconstruction, the normals of the point
 ### Surface Reconstruction
 The surface reconstruction uses either Possion surface reconstruction [5, 6] or Delaunay triangulation [7].
 
-1. http://www.vtk.org/doc/nightly/html/classvtkCleanPolyData.html
-2. http://www.vtk.org/doc/nightly/html/classvtkPolyDataNormals.html
-3. http://daviddoria.com/a-point-set-processing-toolkit-for-vtk/
-4. Hoppe, Hugues, et al. Surface reconstruction from unorganized points. Vol. 26. No. 2. ACM, 1992.
-5. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
-6. Doria D., Gelas A. Poisson Surface Reconstruction for VTK. 2010 Mar (with minor changes/improvements by me)
-7. http://www.vtk.org/doc/nightly/html/classvtkDelaunay3D.html 
-
 ## Build Instructions
 1. **3D Slicer** - Follow the instructions found here: http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers/Build_Instructions
 2. **vtkInfoVisBoost** - Download the latest version of Boost from here: http://www.boost.org/users/history/version_1_59_0.html, and extract to a folder of your choice (BOOST_ROOT). Open CMake and set the build directory to the VTK-build folder located in your 3D Slicer build. Add an entry called BOOST_ROOT, enable vtkInfoVisBoost and vtkInfoVisBoostGraphAlgorithms, then press Generate. Open the Slicer.sln located in the top directory of your Slicer build and build Slicer again.
