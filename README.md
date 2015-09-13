@@ -1,23 +1,22 @@
 # SlicerSurfaceFromUnorganizedPoints
-![Alt text](https://github.com/brudfors/SlicerPointSetProcessing/blob/master/PointSetProcessingScreenShot.PNG?raw=true "SlicerPointSetProcessing")
-
 SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which can compute normals and reconstruct surfaces from sets of unorganized points. 
 
-### M1
-The first step of the reconstruction is to approximate the normals of the point set and their orientaion [1]. Next, the surface reconstruction is performed, which can be either a Possion surface reconstruction [2, 3] or a Delaunay triangulation [4].
+### Downsampling Point-Set
+Downsampling of the input point set is performed using [1].
 
-### M2
-blabla
+### Estimate Normals
+In order to perform the Poisson surface reconstruction, the normals of the point set has to be approximated. This can be done using either [2] or [3,4]. For the reconstruction mehod based on Delaunay triangulation, this is not necessary.
 
-### M3
-blabla
+### Surface Reconstruction
+The surface reconstruction uses either Possion surface reconstruction [5, 6] or Delaunay triangulation [7].
 
 1. http://www.vtk.org/doc/nightly/html/classvtkCleanPolyData.html
 2. http://www.vtk.org/doc/nightly/html/classvtkPolyDataNormals.html
-3. Hoppe, Hugues, et al. Surface reconstruction from unorganized points. Vol. 26. No. 2. ACM, 1992.
-4. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
-5. Doria D., Gelas A. Poisson Surface Reconstruction for VTK. 2010 Mar (with minor changes/improvements by me)
-6. http://www.vtk.org/doc/nightly/html/classvtkDelaunay3D.html 
+3. http://daviddoria.com/a-point-set-processing-toolkit-for-vtk/
+4. Hoppe, Hugues, et al. Surface reconstruction from unorganized points. Vol. 26. No. 2. ACM, 1992.
+5. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
+6. Doria D., Gelas A. Poisson Surface Reconstruction for VTK. 2010 Mar (with minor changes/improvements by me)
+7. http://www.vtk.org/doc/nightly/html/classvtkDelaunay3D.html 
 
 ## Build Instructions
 1. **3D Slicer** - Follow the instructions found here: http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers/Build_Instructions
