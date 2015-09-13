@@ -28,3 +28,12 @@ The surface reconstruction uses either Possion surface reconstruction [5, 6] or 
 ## TODO
 * Rename to SurfaceFromUnorganizedPoints
 * If there is interest: Reset to default, save params in Slicer.ini, calculate in separate thread
+
+## Bibliography
+1. http://www.vtk.org/doc/nightly/html/classvtkCleanPolyData.html
+2. http://www.vtk.org/doc/nightly/html/classvtkPolyDataNormals.html
+3. http://daviddoria.com/a-point-set-processing-toolkit-for-vtk/
+4. Hoppe, Hugues, et al. Surface reconstruction from unorganized points. Vol. 26. No. 2. ACM, 1992.
+5. Kazhdan, Michael, Matthew Bolitho, and Hugues Hoppe. "Poisson surface reconstruction." Proceedings of the fourth Eurographics symposium on Geometry processing. Vol. 7. 2006.
+6. Doria D., Gelas A. Poisson Surface Reconstruction for VTK. 2010 Mar (with minor changes/improvements by me)
+7. http://www.vtk.org/doc/nightly/html/classvtkDelaunay3D.html 
