@@ -1,7 +1,7 @@
 # SlicerSurfaceFromUnorganizedPoints
 SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which can compute normals and reconstruct surfaces from sets of unorganized points. 
 
-### Downsampling Point-Set
+### Downsampling
 Downsampling of the input point set is performed using [1].
 
 ### Estimate Normals
