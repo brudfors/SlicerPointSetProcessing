@@ -29,6 +29,7 @@
 #include <vtkDelaunay3D.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkGlyph3D.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
@@ -100,13 +101,13 @@ void vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormalsPointSetNormal(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool addGlyphs, bool verbose)
+::Apply_vtkPointSetNormalEstimation(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, unsigned int mode, unsigned int numberOfNeighbors, float radius, int kNearestNeighbors, unsigned int graphType, bool addGlyphs, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormalsPointSetNormal");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::Apply_vtkPointSetNormalEstimation");
 
   if (verbose)
   {
-    std::cout << "ComputeNormalsPointSetNormal(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ", addGlyphs = " << addGlyphs << ", verbose = " << verbose << ")" << std::endl;
+    std::cout << "Apply_vtkPointSetNormalEstimation(mode = " << mode << ", numberOfNeighbors = " << numberOfNeighbors << ", radius = " << radius << ", kNearestNeighbors = " << kNearestNeighbors << ", graphType = " << graphType << ", addGlyphs = " << addGlyphs << ", verbose = " << verbose << ")" << std::endl;
   }
 
   if (this->HasPoints(input, verbose))
@@ -159,17 +160,13 @@ float vtkSlicerPointSetProcessingCppLogic
     {
       vtkWarningMacro("Could not execute vtkPointSetNormalOrientation: " << ex.what());
       return 0;
-    }    
-    
-    input->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+    }        
+
+    output->SetAndObservePolyData(normalOrientationFilter->GetOutput());
 
     if (addGlyphs)
     {
-      OutputGlyphs3D(normalOrientationFilter->GetOutput(), output);
-    }
-    else
-    {
-      output->SetAndObservePolyData(normalOrientationFilter->GetOutput());
+      OutputGlyphs3D(normalOrientationFilter->GetOutput(), orientatedGlyphs);
     }
          
     timer->StopTimer();
@@ -182,13 +179,13 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyphs, bool verbose)
+::Apply_vtkPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, double featureAngle, bool splitting, bool consistency, bool autoOrientNormals, bool computePointNormals, bool computeCellNormals, bool flipNormals, bool nonManifoldTraversal, bool addGlyphs, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeNormalsPolyDataNormals");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::Apply_vtkPolyDataNormals");
 
   if (verbose)
   {
-    std::cout << "ComputeNormalsPolyDataNormals()" << std::endl;
+    std::cout << "Apply_vtkPolyDataNormals(featureAngle = " << featureAngle << ", splitting = " << splitting << ", consistency = " << consistency << ", autoOrientNormals = " << autoOrientNormals << ", computePointNormals = " << computePointNormals << ", computeCellNormals = " << computeCellNormals << ", flipNormals = " << flipNormals << ", nonManifoldTraversal = " << nonManifoldTraversal << ", addGlyphs = " << addGlyphs << ", verbose = " << verbose << ")" << std::endl;
   }
 
   if (this->HasPoints(input, verbose))
@@ -198,18 +195,21 @@ float vtkSlicerPointSetProcessingCppLogic
 	
     vtkSmartPointer<vtkPolyDataNormals> polyDataNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
     polyDataNormals->SetInputConnection(input->GetPolyDataConnection());
-    // Params!  
+    polyDataNormals->SetFeatureAngle(featureAngle);
+    polyDataNormals->SetSplitting(splitting); 
+    polyDataNormals->SetConsistency(consistency);
+    polyDataNormals->SetAutoOrientNormals(autoOrientNormals);
+    polyDataNormals->SetComputePointNormals(computePointNormals);
+    polyDataNormals->SetComputeCellNormals(computeCellNormals);
+    polyDataNormals->SetFlipNormals(flipNormals);
+    polyDataNormals->SetNonManifoldTraversal(nonManifoldTraversal);
     polyDataNormals->Update();	
-    
-    input->SetAndObservePolyData(polyDataNormals->GetOutput());
+
+    output->SetAndObservePolyData(polyDataNormals->GetOutput());
 
     if (addGlyphs)
     {
-      OutputGlyphs3D(polyDataNormals->GetOutput(), output);
-    }
-    else
-    {
-      output->SetAndObservePolyData(polyDataNormals->GetOutput());
+      OutputGlyphs3D(polyDataNormals->GetOutput(), orientatedGlyphs);
     }
     
     timer->StopTimer();
@@ -222,13 +222,13 @@ float vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
+::Apply_vtkPoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth, float scale, int solverDivide, int isoDivide, float samplesPerNode, int confidence, int verboseAlgorithm, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurfacePoissionReconstruction");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::Apply_vtkPoissionReconstruction");
 
   if (verbose)
   {
-    std::cout << "ComputeSurfacePoissionReconstruction(depth = " << depth << ", scale = " << scale << ", solverDivide = " << solverDivide << ", isoDivide = " << isoDivide << ", samplesPerNode = " << samplesPerNode << ", confidence = " << confidence << ", verboseAlgorithm =" << verboseAlgorithm << ", verbose =" << verbose << ")" << std::endl;
+    std::cout << "Apply_vtkPoissionReconstruction(depth = " << depth << ", scale = " << scale << ", solverDivide = " << solverDivide << ", isoDivide = " << isoDivide << ", samplesPerNode = " << samplesPerNode << ", confidence = " << confidence << ", verboseAlgorithm =" << verboseAlgorithm << ", verbose =" << verbose << ")" << std::endl;
   }
 
   if (this->HasPointNormals(input, verbose))
@@ -254,38 +254,38 @@ float vtkSlicerPointSetProcessingCppLogic
     float runtime = timer->GetElapsedTime();
     return runtime;
   }
-  vtkWarningMacro("Point data in vtkPolyData contains no normals!");
+  vtkWarningMacro("Point data in vtkPolyData contains no point normals!");
   return 0;
 }
 
 //---------------------------------------------------------------------------
 float vtkSlicerPointSetProcessingCppLogic
-::ComputeSurfaceDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool verbose)
+::Apply_vtkDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, double alpha, double tolerance, double offset, bool boudingTriangulation, bool verbose)
 {
-  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::ComputeSurfaceDelaunay3D");
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::Apply_vtkDelaunay3D");
 
   if (verbose)
   {
-    std::cout << "ComputeSurfaceDelaunay3D()" << std::endl;
+    std::cout << "Apply_vtkDelaunay3D(alpha = " << alpha << ", tolerance = " << tolerance << ", offset = " << offset << ", boudingTriangulation = " << boudingTriangulation << ")" << std::endl;
   }
 
   if (this->HasPoints(input, verbose)) // Normals not necessary here?
   {
     vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
     timer->StartTimer();
-	
-    //// Clean the polydata. This will remove duplicate points that may be
-    //// present in the input data.
-    //vtkSmartPointer<vtkCleanPolyData> cleaner =
-    //vtkSmartPointer<vtkCleanPolyData>::New();
-    //cleaner->SetInputConnection (reader->GetOutputPort());
 
     vtkSmartPointer<vtkDelaunay3D> delaunay3D = vtkSmartPointer<vtkDelaunay3D>::New();
     delaunay3D->SetInputConnection(input->GetPolyDataConnection());
-    // Params!  
-    delaunay3D->Update();	
+    delaunay3D->SetAlpha(alpha); 
+    delaunay3D->SetTolerance(tolerance);
+    delaunay3D->SetOffset(offset);
+    delaunay3D->SetBoundingTriangulation(boudingTriangulation);
 
-    //output->SetAndObservePolyData(delaunay3D->GetOutput());
+    vtkSmartPointer<vtkGeometryFilter> geometryFilter = vtkSmartPointer<vtkGeometryFilter>::New();
+    geometryFilter->SetInputConnection(delaunay3D->GetOutputPort());
+    geometryFilter->Update(); 
+
+    output->SetAndObservePolyData(geometryFilter->GetOutput());
       
     timer->StopTimer();
     float runtime = timer->GetElapsedTime();
@@ -530,7 +530,7 @@ bool vtkSlicerPointSetProcessingCppLogic
 
 //---------------------------------------------------------------------------
 void vtkSlicerPointSetProcessingCppLogic
-::OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, int scaleFactor, double tolerance)
+::OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, double scaleFactor, double tolerance)
 {
   vtkSmartPointer<vtkCleanPolyData> cleanPolyData = vtkSmartPointer<vtkCleanPolyData>::New();
   cleanPolyData->SetInputData(inputPolyData);

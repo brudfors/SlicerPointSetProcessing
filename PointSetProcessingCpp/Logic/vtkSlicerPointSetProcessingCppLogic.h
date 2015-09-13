@@ -47,11 +47,11 @@ public:
   vtkTypeMacro(vtkSlicerPointSetProcessingCppLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  float ComputeNormalsPointSetNormal(vtkMRMLModelNode* input, vtkMRMLModelNode* output, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool addGlyphs = false, bool verbose = false);
-  float ComputeNormalsPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool addGlyphs = false, bool verbose = false);
+  float Apply_vtkPointSetNormalEstimation(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool addGlyphs = false, bool verbose = false);
+  float Apply_vtkPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, double featureAngle = 0.1, bool splitting = true, bool consistency = false, bool autoOrientNormals = false, bool computePointNormals = true, bool computeCellNormals = false, bool flipNormals = false, bool nonManifoldTraversal = true, bool addGlyphs = false, bool verbose = false);
   
-  float ComputeSurfacePoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verboseAlgorithm = 0, bool verbose = false);
-  float ComputeSurfaceDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, bool verbose = false);
+  float Apply_vtkPoissionReconstruction(vtkMRMLModelNode* input, vtkMRMLModelNode* output, int depth = 8, float scale = 1.25, int solverDivide = 8, int isoDivide = 8, float samplesPerNode = 1.0, int confidence = 0, int verboseAlgorithm = 0, bool verbose = false);
+  float Apply_vtkDelaunay3D(vtkMRMLModelNode* input, vtkMRMLModelNode* output, double alpha = 0.0, double tolerance = 0.0, double offset = 2.5, bool boudingTriangulation = false, bool verbose = false);
   
 protected:
   vtkSlicerPointSetProcessingCppLogic();
@@ -68,7 +68,7 @@ private:
   bool HasPointNormals(vtkMRMLModelNode* input, bool verbose = false);
   bool HasCellNormals(vtkMRMLModelNode* input, bool verbose = false);
   bool HasPoints(vtkMRMLModelNode* input, bool verbose = false);
-  void OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, int scaleFactor = 1, double tolerance = 0.1);
+  void OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, double scaleFactor = 0.4, double tolerance = 0.1);
 
   vtkSlicerPointSetProcessingCppLogic(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented
   void operator=(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented

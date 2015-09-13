@@ -42,6 +42,38 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputSelector.setToolTip( "Pick the input to the algorithm." )
     pointSetProcessingFormLayout.addRow("Input Model: ", self.inputSelector)
 
+    self.inputPointSizeSlider = ctk.ctkSliderWidget()
+    self.inputPointSizeSlider.setDecimals(0)
+    self.inputPointSizeSlider.singleStep = 1
+    self.inputPointSizeSlider.minimum = 1
+    self.inputPointSizeSlider.maximum = 10
+    self.inputPointSizeSlider.value = 1
+    pointSetProcessingFormLayout.addRow('Input Model Point Size: ', self.inputPointSizeSlider)
+    
+    # Downsample
+    self.downSampleGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.downSampleGroupBox.setTitle("Downsample Input Model")
+    downSampleFormLayout = qt.QFormLayout(self.downSampleGroupBox)
+    pointSetProcessingFormLayout.addRow(self.downSampleGroupBox)
+    
+    self.nbrOfPointsLabel = qt.QLabel('Number of Points in Input Model: - ')
+    downSampleFormLayout.addRow(self.nbrOfPointsLabel)
+    
+    self.toleranceSlider = ctk.ctkSliderWidget()
+    self.toleranceSlider.setDecimals(1)
+    self.toleranceSlider.singleStep = 0.1
+    self.toleranceSlider.minimum = 0.0
+    self.toleranceSlider.maximum = 1.0
+    self.toleranceSlider.value = 0.1
+    self.toleranceSlider.setToolTip('')
+    self.toleranceSlider.enabled = True
+    downSampleFormLayout.addRow('Tolerance: ', self.toleranceSlider)
+    
+    self.vtkCleanPolyDataButton = qt.QPushButton("Apply")
+    self.vtkCleanPolyDataButton.enabled = False
+    self.vtkCleanPolyDataButton.checkable = True
+    downSampleFormLayout.addRow(self.vtkCleanPolyDataButton)    
+    
     # Runtime
     self.runtimeGroupBox = ctk.ctkCollapsibleGroupBox()
     self.runtimeGroupBox.setTitle("Runtime")
@@ -72,18 +104,18 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.normalsTabWidget = qt.QTabWidget()
     normalsFormLayout.addRow(self.normalsTabWidget)
 
-    # vtkPointSetNormal
-    self.vtkPointSetNormalWidget = qt.QWidget()
-    vtkPointSetNormalFormLayout = qt.QFormLayout(self.vtkPointSetNormalWidget)
-    normalsFormLayout.addRow(self.vtkPointSetNormalWidget)
-    self.normalsTabWidget.addTab(self.vtkPointSetNormalWidget, "vtkPointSetNormal")    
+    # vtkPointSetNormalEstimation
+    self.vtkPointSetNormalEstimationWidget = qt.QWidget()
+    vtkPointSetNormalEstimationFormLayout = qt.QFormLayout(self.vtkPointSetNormalEstimationWidget)
+    normalsFormLayout.addRow(self.vtkPointSetNormalEstimationWidget)
+    self.normalsTabWidget.addTab(self.vtkPointSetNormalEstimationWidget, "vtkPointSetNormalEstimation")    
         
     self.modeTypeComboBox = qt.QComboBox()
     self.modeTypeComboBox.addItem('Fixed')  
     self.modeTypeComboBox.addItem('Radius')
     self.modeTypeComboBox.setCurrentIndex(1)
     self.modeTypeComboBox.setToolTip('')    
-    vtkPointSetNormalFormLayout.addRow('Mode Type: ', self.modeTypeComboBox)
+    vtkPointSetNormalEstimationFormLayout.addRow('Mode Type: ', self.modeTypeComboBox)
     
     self.numberOfNeighborsSlider = ctk.ctkSliderWidget()
     self.numberOfNeighborsSlider.setDecimals(0)
@@ -93,7 +125,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.numberOfNeighborsSlider.value = 4
     self.numberOfNeighborsSlider.setToolTip('')
     self.numberOfNeighborsSlider.enabled = False
-    vtkPointSetNormalFormLayout.addRow('Fixed Neighbors: ', self.numberOfNeighborsSlider)
+    vtkPointSetNormalEstimationFormLayout.addRow('Fixed Neighbors: ', self.numberOfNeighborsSlider)
     
     self.radiusSlider = ctk.ctkSliderWidget()
     self.radiusSlider.setDecimals(2)
@@ -102,14 +134,14 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.radiusSlider.maximum = 10
     self.radiusSlider.value = 1.0
     self.radiusSlider.setToolTip('')
-    vtkPointSetNormalFormLayout.addRow('Radius: ', self.radiusSlider)
+    vtkPointSetNormalEstimationFormLayout.addRow('Radius: ', self.radiusSlider)
     
     self.graphTypeComboBox = qt.QComboBox()
     self.graphTypeComboBox.addItem('Riemann')  
     self.graphTypeComboBox.addItem('KNN')
     self.graphTypeComboBox.setCurrentIndex(1)
     self.graphTypeComboBox.setToolTip('')    
-    vtkPointSetNormalFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
+    vtkPointSetNormalEstimationFormLayout.addRow('Graph Type: ', self.graphTypeComboBox)
     
     self.knnSlider = ctk.ctkSliderWidget()
     self.knnSlider.setDecimals(0)
@@ -118,20 +150,83 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.maximum = 20
     self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
-    vtkPointSetNormalFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
+    vtkPointSetNormalEstimationFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
     
-    self.vtkPointSetNormalButton = qt.QPushButton("Apply")
-    self.vtkPointSetNormalButton.enabled = False
-    self.vtkPointSetNormalButton.checkable = True
-    vtkPointSetNormalFormLayout.addRow(self.vtkPointSetNormalButton)    
+    self.vtkPointSetNormalEstimationButton = qt.QPushButton("Apply")
+    self.vtkPointSetNormalEstimationButton.enabled = False
+    self.vtkPointSetNormalEstimationButton.checkable = True
+    vtkPointSetNormalEstimationFormLayout.addRow(self.vtkPointSetNormalEstimationButton)    
 
     # vtkPolyDataNormals
     self.vtkPolyDataNormalsWidget = qt.QWidget()
     vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkPolyDataNormalsWidget)
     normalsFormLayout.addRow(self.vtkPolyDataNormalsWidget)
-    self.normalsTabWidget.addTab(self.vtkPolyDataNormalsWidget, "vtkPolyDataNormals") 
+    self.normalsTabWidget.addTab(self.vtkPolyDataNormalsWidget, "vtkPolyDataNormals")    
     
-    self.normalsVisibleCheckBox = qt.QCheckBox('Normals Visibility: ')
+    self.featureAngleSlider = ctk.ctkSliderWidget()
+    self.featureAngleSlider.setDecimals(2)
+    self.featureAngleSlider.singleStep = 0.01
+    self.featureAngleSlider.minimum = 0
+    self.featureAngleSlider.maximum = 360
+    self.featureAngleSlider.value = 0.1
+    self.featureAngleSlider.setToolTip('')
+    vtkPolyDataNormalsFormLayout.addRow('Feature Angle: ', self.featureAngleSlider)    
+    
+    self.splittingComboBox = qt.QComboBox()
+    self.splittingComboBox.addItem('False')
+    self.splittingComboBox.addItem('True')  
+    self.splittingComboBox.setCurrentIndex(1)
+    self.splittingComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Splitting: ', self.splittingComboBox)
+    
+    self.consistencyComboBox = qt.QComboBox()
+    self.consistencyComboBox.addItem('False')
+    self.consistencyComboBox.addItem('True')  
+    self.consistencyComboBox.setCurrentIndex(0)
+    self.consistencyComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Consistency: ', self.consistencyComboBox)
+    
+    self.autoOrientNormalsComboBox = qt.QComboBox()
+    self.autoOrientNormalsComboBox.addItem('False')
+    self.autoOrientNormalsComboBox.addItem('True') 
+    self.autoOrientNormalsComboBox.setCurrentIndex(0)    
+    self.autoOrientNormalsComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Auto-Orient Normals: ', self.autoOrientNormalsComboBox)
+    
+    self.computePointNormalsComboBox = qt.QComboBox()
+    self.computePointNormalsComboBox.addItem('False')
+    self.computePointNormalsComboBox.addItem('True') 
+    self.computePointNormalsComboBox.setCurrentIndex(1)    
+    self.computePointNormalsComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Compute Point Normals: ', self.computePointNormalsComboBox)
+    
+    self.computeCellNormalsComboBox = qt.QComboBox()
+    self.computeCellNormalsComboBox.addItem('False')
+    self.computeCellNormalsComboBox.addItem('True')
+    self.computeCellNormalsComboBox.setCurrentIndex(0)    
+    self.computeCellNormalsComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Compute Cell Normals: ', self.computeCellNormalsComboBox)
+    
+    self.flipNormalsComboBox = qt.QComboBox()
+    self.flipNormalsComboBox.addItem('False')
+    self.flipNormalsComboBox.addItem('True')  
+    self.flipNormalsComboBox.setCurrentIndex(0)
+    self.flipNormalsComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Flip Normals: ', self.flipNormalsComboBox)
+    
+    self.nonManifoldTraversalComboBox = qt.QComboBox()
+    self.nonManifoldTraversalComboBox.addItem('False')
+    self.nonManifoldTraversalComboBox.addItem('True') 
+    self.nonManifoldTraversalComboBox.setCurrentIndex(1)    
+    self.nonManifoldTraversalComboBox.setToolTip('')    
+    vtkPolyDataNormalsFormLayout.addRow('Non-Manifold Traversal: ', self.nonManifoldTraversalComboBox)
+    
+    self.vtkPolyDataNormalsButton = qt.QPushButton("Apply")
+    self.vtkPolyDataNormalsButton.enabled = False
+    self.vtkPolyDataNormalsButton.checkable = True
+    vtkPolyDataNormalsFormLayout.addRow(self.vtkPolyDataNormalsButton)  
+    
+    self.normalsVisibleCheckBox = qt.QCheckBox('Arrows Visibility: ')
     self.normalsVisibleCheckBox.checked = True
     self.normalsVisibleCheckBox.enabled = True
     self.normalsVisibleCheckBox.setLayoutDirection(1)
@@ -216,9 +311,48 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
 
     # vtkDelaunay3D
     self.vtkDelaunay3DWidget = qt.QWidget()
-    vtkPolyDataNormalsFormLayout = qt.QFormLayout(self.vtkDelaunay3DWidget)
+    vtkDelaunay3DFormLayout = qt.QFormLayout(self.vtkDelaunay3DWidget)
     surfaceFormLayout.addRow(self.vtkDelaunay3DWidget)
     self.surfaceTabWidget.addTab(self.vtkDelaunay3DWidget, "vtkDelaunay3D") 
+    
+    self.alphaSlider = ctk.ctkSliderWidget()
+    self.alphaSlider.setDecimals(1)
+    self.alphaSlider.singleStep = 0.1
+    self.alphaSlider.minimum = 0.0
+    self.alphaSlider.maximum = 100.0
+    self.alphaSlider.value = 0.0
+    self.alphaSlider.setToolTip('')
+    vtkDelaunay3DFormLayout.addRow('Alpha: ', self.alphaSlider)   
+    
+    self.toleranceSlider = ctk.ctkSliderWidget()
+    self.toleranceSlider.setDecimals(2)
+    self.toleranceSlider.singleStep = 0.01
+    self.toleranceSlider.minimum = 0.0
+    self.toleranceSlider.maximum = 1.0
+    self.toleranceSlider.value = 0.0
+    self.toleranceSlider.setToolTip('')
+    vtkDelaunay3DFormLayout.addRow('Tolerance: ', self.toleranceSlider)   
+    
+    self.offsetSlider = ctk.ctkSliderWidget()
+    self.offsetSlider.setDecimals(1)
+    self.offsetSlider.singleStep = 0.1
+    self.offsetSlider.minimum = 0.0
+    self.offsetSlider.maximum = 10.0
+    self.offsetSlider.value = 2.5
+    self.offsetSlider.setToolTip('')
+    vtkDelaunay3DFormLayout.addRow('Offset: ', self.offsetSlider)   
+    
+    self.boundingComboBox = qt.QComboBox()
+    self.boundingComboBox.addItem('False')
+    self.boundingComboBox.addItem('True')  
+    self.boundingComboBox.setCurrentIndex(0)    
+    self.boundingComboBox.setToolTip('')    
+    vtkDelaunay3DFormLayout.addRow('Bounding Triangulations: ', self.boundingComboBox)
+    
+    self.vtkDelaunay3DButton = qt.QPushButton("Apply")
+    self.vtkDelaunay3DButton.enabled = False
+    self.vtkDelaunay3DButton.checkable = True
+    vtkDelaunay3DFormLayout.addRow(self.vtkDelaunay3DButton)    
     
     self.surfaceVisibleCheckBox = qt.QCheckBox('Surface Visibility: ')
     self.surfaceVisibleCheckBox.checked = True
@@ -227,13 +361,17 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     surfaceFormLayout.addRow(self.surfaceVisibleCheckBox)
     
     # connections
-    self.vtkPointSetNormalButton.connect('clicked(bool)', self.vtkPointSetNormalButtonClicked)
+    self.vtkCleanPolyDataButton.connect('clicked(bool)', self.vtkCleanPolyDataClicked)
+    self.vtkPointSetNormalEstimationButton.connect('clicked(bool)', self.vtkPointSetNormalEstimationClicked)
+    self.vtkPolyDataNormalsButton.connect('clicked(bool)', self.vtkPolyDataNormalsClicked)
     self.vtkPoissionReconstructionButton.connect('clicked(bool)', self.vtkPoissionReconstructionClicked)
+    self.vtkDelaunay3DButton.connect('clicked(bool)', self.vtkDelaunay3DClicked)
     self.inputSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onSelect)
     self.graphTypeComboBox.connect('currentIndexChanged(const QString &)', self.onGraphTypeChanged)
     self.modeTypeComboBox.connect('currentIndexChanged(const QString &)', self.onModeChanged)
     self.surfaceVisibleCheckBox.connect('stateChanged(int)', self.onSurfaceVisible)
     self.normalsVisibleCheckBox.connect('stateChanged(int)', self.onNormalsVisible)
+    self.inputPointSizeSlider.connect('valueChanged (double)', self.onInputPointSliderModified)
             
     # Add vertical spacer
     self.layout.addStretch(1)
@@ -244,13 +382,18 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     lm=slicer.app.layoutManager()
     lm.setLayout(4) # One 3D-view    
 
+  def onInputPointSliderModified(self, value):
+    inputModelNode = self.inputSelector.currentNode()
+    if inputModelNode:
+      inputModelNode.GetModelDisplayNode().SetPointSize(value)
+  
   def onSurfaceVisible(self, state):
     logic = PointSetProcessingPyLogic()
     logic.setModelVisibility('ComputedSurface', self.surfaceVisibleCheckBox.checked)
  
   def onNormalsVisible(self, state):
     logic = PointSetProcessingPyLogic()
-    logic.setModelVisibility('ComputedNormals', self.normalsVisibleCheckBox.checked)
+    logic.setModelVisibility('OrientatedGlyphs', self.normalsVisibleCheckBox.checked)
     
   def onGraphTypeChanged(self, type):
     if type == 'KNN':
@@ -267,56 +410,94 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
       self.numberOfNeighborsSlider.enabled = True
       
   def onSelect(self):
-    self.vtkPointSetNormalButton.enabled = self.inputSelector.currentNode()
+    self.vtkCleanPolyDataButton.enabled = self.inputSelector.currentNode()
+    self.vtkPointSetNormalEstimationButton.enabled = self.inputSelector.currentNode()
     self.vtkPoissionReconstructionButton.enabled = self.inputSelector.currentNode()
+    self.vtkPolyDataNormalsButton.enabled = self.inputSelector.currentNode()
+    self.vtkDelaunay3DButton.enabled = self.inputSelector.currentNode()
 
-  def vtkPointSetNormalButtonClicked(self):
-    if self.vtkPointSetNormalButton.checked:
+  def vtkDelaunay3DClicked(self):
+    if self.vtkDelaunay3DButton.checked:
+      logic = PointSetProcessingPyLogic()  
+      logic.vtkDelaunay3D(self.inputSelector.currentNode(), self.alphaSlider.value, self.toleranceSlider.value, self.offsetSlider.value, self.boundingComboBox.currentIndex, self.runtimeLabel)
+      self.vtkDelaunay3DButton.checked = False    
+  
+  def vtkCleanPolyDataClicked(self):
+    if self.vtkCleanPolyDataButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.vtkPointSetNormal(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)        
-      self.vtkPointSetNormalButton.checked = False   
+      logic.vtkCleanPolyData(self.inputSelector.currentNode(), self.toleranceSlider.value)        
+      self.vtkCleanPolyDataButton.checked = False   
+      self.nbrOfPointsLabel.setText('Number of Points in Input Model: ' + str(self.inputSelector.currentNode().GetPolyData().GetNumberOfPoints()))
       
+  def vtkPointSetNormalEstimationClicked(self):
+    if self.vtkPointSetNormalEstimationButton.checked:
+      logic = PointSetProcessingPyLogic()
+      logic.vtkPointSetNormalEstimation(self.inputSelector.currentNode(), self.modeTypeComboBox.currentIndex, self.numberOfNeighborsSlider.value, self.radiusSlider.value, self.knnSlider.value, self.graphTypeComboBox.currentIndex, self.runtimeLabel)        
+      self.vtkPointSetNormalEstimationButton.checked = False   
+  
+  def vtkPolyDataNormalsClicked(self):
+    if self.vtkPolyDataNormalsButton.checked:
+      logic = PointSetProcessingPyLogic()
+      logic.vtkPolyDataNormals(self.inputSelector.currentNode(), self.featureAngleSlider.value, self.splittingComboBox.currentIndex, self.consistencyComboBox.currentIndex, self.autoOrientNormalsComboBox.currentIndex, self.computePointNormalsComboBox.currentIndex, self.computeCellNormalsComboBox.currentIndex, self.flipNormalsComboBox.currentIndex, self.nonManifoldTraversalComboBox.currentIndex, self.runtimeLabel)        
+      self.vtkPolyDataNormalsButton.checked = False   
+  
   def vtkPoissionReconstructionClicked(self):
     if self.vtkPoissionReconstructionButton.checked:
       logic = PointSetProcessingPyLogic()  
-      logic.vtkPoissionReconstruction(self.inputSelector.currentNode(), self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
+      logic.vtkPoissionReconstruction(self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
       self.vtkPoissionReconstructionButton.checked = False         
 
 ############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def vtkPointSetNormal(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
+  def vtkCleanPolyData(self, inputModelNode, tolerance):
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputConnection(inputModelNode.GetPolyDataConnection())
+    cleanPolyData.SetTolerance(tolerance)
+    cleanPolyData.Update()
+    inputModelNode.SetAndObservePolyData(cleanPolyData.GetOutput())
+  
+  def vtkPointSetNormalEstimation(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
-      outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPointSetNormal(inputModelNode, outputModelNode, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
+      outputModelNode = self.createModelNode('ComputedNormals', [0, 0, 1])  
+      outputModelNode.SetDisplayVisibility(False)
+    orientatedGlyphs = slicer.util.getNode('OrientatedGlyphs')
+    if not orientatedGlyphs:
+      orientatedGlyphs = self.createModelNode('OrientatedGlyphs', [0, 1, 0])        
+    runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPointSetNormalEstimation(inputModelNode, outputModelNode, orientatedGlyphs, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
     if runtimeLabel:
-      runtimeLabel.setText('vtkPointSetNormal computed in  %.2f' % runtime + ' s.')
+      runtimeLabel.setText('vtkPointSetNormalEstimation computed in  %.2f' % runtime + ' s.')
     return True
    
-  def computeNormalsPolyDataNormals(self, inputModelNode, runtimeLabel = None):
+  def vtkPolyDataNormals(self, inputModelNode, featureAngle, splitting, consistency, autoOrientNormals, computePointNormals, computeCellNormals, flipNormals, nonManifoldTraversal, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
-      outputModelNode = self.createModelNode('ComputedNormals', [0, 1, 0])  
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeNormalsPolyDataNormals(inputModelNode, outputModelNode)
+      outputModelNode = self.createModelNode('ComputedNormals', [0, 0, 1])  
+      outputModelNode.SetDisplayVisibility(False)
+    orientatedGlyphs = slicer.util.getNode('OrientatedGlyphs')
+    if not orientatedGlyphs:
+      orientatedGlyphs = self.createModelNode('OrientatedGlyphs', [0, 1, 0])    
+    runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPolyDataNormals(inputModelNode, outputModelNode, orientatedGlyphs, float(featureAngle), splitting, consistency, autoOrientNormals, computePointNormals, computeCellNormals, flipNormals, nonManifoldTraversal, True, True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
     return True
    
-  def computeSurfaceDelaunay3D(self, inputModelNode, runtimeLabel = None):
+  def vtkDelaunay3D(self, inputModelNode, alpha, tolerance, offset, boudingTriangulation, runtimeLabel = None):
     outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfaceDelaunay3D(inputModelNode, outputModelNode)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkDelaunay3D(inputModelNode, outputModelNode, float(alpha), float(tolerance), float(offset), boudingTriangulation, True)
     if runtimeLabel:
       runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
     return True
 
-  def vtkPoissionReconstruction(self, inputModelNode, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+  def vtkPoissionReconstruction(self, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+    inputModelNode = slicer.util.getNode('ComputedNormals')
     outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
-    runtime = slicer.modules.pointsetprocessingcpp.logic().ComputeSurfacePoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose), True)
+    runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose), True)
     if runtimeLabel:
       runtimeLabel.setText('vtkPoissionReconstruction computed in %.2f' % runtime + ' s.')
     return True
