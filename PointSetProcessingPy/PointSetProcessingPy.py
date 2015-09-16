@@ -102,7 +102,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.percentToRemoveSlider.setDecimals(2)
     self.percentToRemoveSlider.singleStep = 0.01
     self.percentToRemoveSlider.minimum = 0.0
-    self.percentToRemoveSlider.maximum = 100.0
+    self.percentToRemoveSlider.maximum = 1.0
     self.percentToRemoveSlider.value = 0.01
     self.percentToRemoveSlider.setToolTip('')
     self.percentToRemoveSlider.enabled = True
@@ -277,7 +277,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.scaleSlider = ctk.ctkSliderWidget()
     self.scaleSlider.setDecimals(2)
     self.scaleSlider.singleStep = 0.01
-    self.scaleSlider.minimum = 1
+    self.scaleSlider.minimum = 0
     self.scaleSlider.maximum = 10
     self.scaleSlider.value = 1.25
     self.scaleSlider.setToolTip('This floating point value specifies the ratio between the diameter of the cube used for reconstruction and the diameter of the samples bounding cube.')
