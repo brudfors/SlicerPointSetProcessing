@@ -47,6 +47,8 @@ public:
   vtkTypeMacro(vtkSlicerPointSetProcessingCppLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
+  float Apply_vtkPointSetOutlierRemoval(vtkMRMLModelNode* input, double percentToRemove = 0.01, bool verbose = false);
+
   float Apply_vtkPointSetNormalEstimation(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, unsigned int mode = 1, unsigned int numberOfNeighbors = 4, float radius = 1.0, int kNearestNeighbors = 5, unsigned int graphType = 1, bool addGlyphs = false, bool verbose = false);
   float Apply_vtkPolyDataNormals(vtkMRMLModelNode* input, vtkMRMLModelNode* output, vtkMRMLModelNode* orientatedGlyphs, double featureAngle = 0.1, bool splitting = true, bool consistency = false, bool autoOrientNormals = false, bool computePointNormals = true, bool computeCellNormals = false, bool flipNormals = false, bool nonManifoldTraversal = true, bool addGlyphs = false, bool verbose = false);
   

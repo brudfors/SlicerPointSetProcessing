@@ -44,6 +44,7 @@
 
 #include <vtkPointSetNormalEstimation.h>
 #include <vtkPointSetNormalOrientation.h>
+#include <vtkPointSetOutlierRemoval.h>
 #include <vtkPoissonReconstruction.h>
 
 //----------------------------------------------------------------------------
@@ -97,6 +98,37 @@ void vtkSlicerPointSetProcessingCppLogic
 void vtkSlicerPointSetProcessingCppLogic
 ::OnMRMLSceneNodeRemoved(vtkMRMLNode* vtkNotUsed(node))
 {
+}
+
+//---------------------------------------------------------------------------
+float vtkSlicerPointSetProcessingCppLogic
+::Apply_vtkPointSetOutlierRemoval(vtkMRMLModelNode* input, double percentToRemove, bool verbose)
+{
+  vtkInfoMacro("vtkSlicerPointSetProcessingCppLogic::Apply_vtkPointSetOutlierRemoval");
+
+  if (verbose)
+  {
+    std::cout << "Apply_vtkPointSetOutlierRemoval(verbose = " << verbose << "percentToRemove = " << percentToRemove << ")" << std::endl;
+  }
+
+  if (this->HasPoints(input, verbose))
+  {
+    vtkSmartPointer<vtkTimerLog> timer = vtkSmartPointer<vtkTimerLog>::New();
+    timer->StartTimer();
+	
+    vtkSmartPointer<vtkPointSetOutlierRemoval> outlierRemoval = vtkSmartPointer<vtkPointSetOutlierRemoval>::New();
+    outlierRemoval->SetInputConnection(input->GetPolyDataConnection());
+    outlierRemoval->SetPercentToRemove(percentToRemove); //remove percentToRemove of the points
+    outlierRemoval->Update();
+
+    input->SetAndObservePolyData(outlierRemoval->GetOutput());
+         
+    timer->StopTimer();
+    float runtime = timer->GetElapsedTime();
+    return runtime;
+  }
+  vtkWarningMacro("Point data in vtkPolyData contains no points!");
+  return 0;
 }
 
 //---------------------------------------------------------------------------

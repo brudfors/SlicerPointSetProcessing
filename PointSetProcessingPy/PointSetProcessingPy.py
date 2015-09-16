@@ -5,7 +5,6 @@ from slicer.ScriptedLoadableModule import *
 
 import logging
 
-############################################################ PointSetProcessingPy 
 class PointSetProcessingPy(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
@@ -18,9 +17,8 @@ class PointSetProcessingPy(ScriptedLoadableModule):
     """
     self.parent.acknowledgementText = """
     Supported by projects IPT-2012-0401-300000, TEC2013-48251-C2-1-R, DTS14/00192 and FEDER funds. 
-""" # replace with organization, grant and thanks.
+"""
 
-############################################################ PointSetProcessingPyWidget 
 class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -41,6 +39,9 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputSelector.setMRMLScene( slicer.mrmlScene )
     self.inputSelector.setToolTip( "Pick the input to the algorithm." )
     pointSetProcessingFormLayout.addRow("Input Model: ", self.inputSelector)
+    
+    self.nbrOfPointsLabel = qt.QLabel('Number of Points in Input Model: - ')
+    pointSetProcessingFormLayout.addRow(self.nbrOfPointsLabel)
 
     self.inputPointSizeSlider = ctk.ctkSliderWidget()
     self.inputPointSizeSlider.setDecimals(0)
@@ -50,33 +51,8 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.inputPointSizeSlider.value = 1
     pointSetProcessingFormLayout.addRow('Input Model Point Size: ', self.inputPointSizeSlider)
     
-    # Downsample
-    self.downSampleGroupBox = ctk.ctkCollapsibleGroupBox()
-    self.downSampleGroupBox.setTitle("Downsample Input Model")
-    downSampleFormLayout = qt.QFormLayout(self.downSampleGroupBox)
-    pointSetProcessingFormLayout.addRow(self.downSampleGroupBox)
-    
-    self.nbrOfPointsLabel = qt.QLabel('Number of Points in Input Model: - ')
-    downSampleFormLayout.addRow(self.nbrOfPointsLabel)
-    
-    self.toleranceSlider = ctk.ctkSliderWidget()
-    self.toleranceSlider.setDecimals(1)
-    self.toleranceSlider.singleStep = 0.1
-    self.toleranceSlider.minimum = 0.0
-    self.toleranceSlider.maximum = 1.0
-    self.toleranceSlider.value = 0.1
-    self.toleranceSlider.setToolTip('')
-    self.toleranceSlider.enabled = True
-    downSampleFormLayout.addRow('Tolerance: ', self.toleranceSlider)
-    
-    self.vtkCleanPolyDataButton = qt.QPushButton("Apply")
-    self.vtkCleanPolyDataButton.enabled = False
-    self.vtkCleanPolyDataButton.checkable = True
-    downSampleFormLayout.addRow(self.vtkCleanPolyDataButton)    
-    
     # Runtime
-    self.runtimeGroupBox = ctk.ctkCollapsibleGroupBox()
-    self.runtimeGroupBox.setTitle("Runtime")
+    self.runtimeGroupBox = qt.QGroupBox('Runtime')    
     runtimeFormLayout = qt.QFormLayout(self.runtimeGroupBox)
     pointSetProcessingFormLayout.addRow(self.runtimeGroupBox)
     
@@ -93,8 +69,50 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
                                            padding: 0px;\
                                            font-family : SimSun; \
                                            qproperty-alignment: AlignCenter}")
-    runtimeFormLayout.addRow(self.runtimeLabel)
+    runtimeFormLayout.addRow(self.runtimeLabel)    
     
+    # Downsample
+    self.downSampleGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.downSampleGroupBox.setTitle("Downsample Input Model")
+    downSampleFormLayout = qt.QFormLayout(self.downSampleGroupBox)
+    pointSetProcessingFormLayout.addRow(self.downSampleGroupBox)    
+    
+    self.toleranceCleanSlider = ctk.ctkSliderWidget()
+    self.toleranceCleanSlider.setDecimals(2)
+    self.toleranceCleanSlider.singleStep = 0.01
+    self.toleranceCleanSlider.minimum = 0.0
+    self.toleranceCleanSlider.maximum = 1.0
+    self.toleranceCleanSlider.value = 0.01
+    self.toleranceCleanSlider.setToolTip('')
+    self.toleranceCleanSlider.enabled = True
+    downSampleFormLayout.addRow('Tolerance: ', self.toleranceCleanSlider)
+    
+    self.vtkCleanPolyDataButton = qt.QPushButton("Apply")
+    self.vtkCleanPolyDataButton.enabled = False
+    self.vtkCleanPolyDataButton.checkable = True
+    downSampleFormLayout.addRow(self.vtkCleanPolyDataButton)    
+
+    # Outlier Removal
+    self.outlierRemovalGroupBox = ctk.ctkCollapsibleGroupBox()
+    self.outlierRemovalGroupBox.setTitle("Outlier Removal")
+    outlierRemovalFormLayout = qt.QFormLayout(self.outlierRemovalGroupBox)
+    pointSetProcessingFormLayout.addRow(self.outlierRemovalGroupBox)
+    
+    self.percentToRemoveSlider = ctk.ctkSliderWidget()
+    self.percentToRemoveSlider.setDecimals(2)
+    self.percentToRemoveSlider.singleStep = 0.01
+    self.percentToRemoveSlider.minimum = 0.0
+    self.percentToRemoveSlider.maximum = 100.0
+    self.percentToRemoveSlider.value = 0.01
+    self.percentToRemoveSlider.setToolTip('')
+    self.percentToRemoveSlider.enabled = True
+    outlierRemovalFormLayout.addRow('Percent to Remove: ', self.percentToRemoveSlider)
+    
+    self.vtkPointSetOutlierRemovalButton = qt.QPushButton("Apply")
+    self.vtkPointSetOutlierRemovalButton.enabled = False
+    self.vtkPointSetOutlierRemovalButton.checkable = True
+    outlierRemovalFormLayout.addRow(self.vtkPointSetOutlierRemovalButton)  
+        
     # Compute Normals
     self.normalsGroupBox = ctk.ctkCollapsibleGroupBox()
     self.normalsGroupBox.setTitle("Compute Normals")
@@ -362,6 +380,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     
     # connections
     self.vtkCleanPolyDataButton.connect('clicked(bool)', self.vtkCleanPolyDataClicked)
+    self.vtkPointSetOutlierRemovalButton.connect('clicked(bool)', self.vtkPointSetOutlierRemovalClicked)
     self.vtkPointSetNormalEstimationButton.connect('clicked(bool)', self.vtkPointSetNormalEstimationClicked)
     self.vtkPolyDataNormalsButton.connect('clicked(bool)', self.vtkPolyDataNormalsClicked)
     self.vtkPoissionReconstructionButton.connect('clicked(bool)', self.vtkPoissionReconstructionClicked)
@@ -415,7 +434,17 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.vtkPoissionReconstructionButton.enabled = self.inputSelector.currentNode()
     self.vtkPolyDataNormalsButton.enabled = self.inputSelector.currentNode()
     self.vtkDelaunay3DButton.enabled = self.inputSelector.currentNode()
+    self.vtkPointSetOutlierRemovalButton.enabled = self.inputSelector.currentNode()
+    if self.inputSelector.currentNode():
+      self.inputSelector.currentNode().GetModelDisplayNode().SetPointSize(self.inputPointSizeSlider.value)
 
+  def vtkPointSetOutlierRemovalClicked(self):
+    if self.vtkPointSetOutlierRemovalButton.checked:
+      logic = PointSetProcessingPyLogic()  
+      logic.vtkPointSetOutlierRemoval(self.inputSelector.currentNode(), self.percentToRemoveSlider.value, self.runtimeLabel)
+      self.vtkPointSetOutlierRemovalButton.checked = False
+      self.nbrOfPointsLabel.setText('Number of Points in Input Model: ' + str(self.inputSelector.currentNode().GetPolyData().GetNumberOfPoints()))    
+    
   def vtkDelaunay3DClicked(self):
     if self.vtkDelaunay3DButton.checked:
       logic = PointSetProcessingPyLogic()  
@@ -425,7 +454,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
   def vtkCleanPolyDataClicked(self):
     if self.vtkCleanPolyDataButton.checked:
       logic = PointSetProcessingPyLogic()
-      logic.vtkCleanPolyData(self.inputSelector.currentNode(), self.toleranceSlider.value)        
+      logic.vtkCleanPolyData(self.inputSelector.currentNode(), self.toleranceCleanSlider.value, self.runtimeLabel)        
       self.vtkCleanPolyDataButton.checked = False   
       self.nbrOfPointsLabel.setText('Number of Points in Input Model: ' + str(self.inputSelector.currentNode().GetPolyData().GetNumberOfPoints()))
       
@@ -447,17 +476,28 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
       logic.vtkPoissionReconstruction(self.depthSlider.value, self.scaleSlider.value, self.solverDivideSlider.value, self.isoDivideSlider.value, self.samplesPerNodeSlider.value, self.confidenceComboBox.currentIndex, self.verboseComboBox.currentIndex, self.runtimeLabel)
       self.vtkPoissionReconstructionButton.checked = False         
 
-############################################################ PointSetProcessingPyLogic 
 class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
 
-  def vtkCleanPolyData(self, inputModelNode, tolerance):
+  def vtkCleanPolyData(self, inputModelNode, tolerance, runtimeLabel):
+    runtime = vtk.vtkTimerLog()
+    runtime.StartTimer()
+    # vtkVertexGlyphFilter
+    glyphFilter = vtk.vtkVertexGlyphFilter()
+    glyphFilter.SetInputConnection(inputModelNode.GetPolyDataConnection())
+    # vtkCleanPolyData
     cleanPolyData = vtk.vtkCleanPolyData()
-    cleanPolyData.SetInputConnection(inputModelNode.GetPolyDataConnection())
+    cleanPolyData.SetInputConnection(glyphFilter.GetOutputPort())
     cleanPolyData.SetTolerance(tolerance)
     cleanPolyData.Update()
+    runtime.StopTimer()
+    runtimeLabel.setText('vtkCleanPolyData computed in  %.2f' % runtime.GetElapsedTime() + ' s.')    
     inputModelNode.SetAndObservePolyData(cleanPolyData.GetOutput())
   
-  def vtkPointSetNormalEstimation(self, inputModelNode, mode = 1, numberOfNeighbors = 4, radius = 1.0, kNearestNeighbors = 5, graphType = 1, runtimeLabel = None):
+  def vtkPointSetOutlierRemoval(self, inputModelNode, percentToRemove, runtimeLabel):
+    runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPointSetOutlierRemoval(inputModelNode, float(percentToRemove), True)
+    runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
+    
+  def vtkPointSetNormalEstimation(self, inputModelNode, mode, numberOfNeighbors, radius, kNearestNeighbors, graphType, runtimeLabel):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 0, 1])  
@@ -466,11 +506,10 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     if not orientatedGlyphs:
       orientatedGlyphs = self.createModelNode('OrientatedGlyphs', [0, 1, 0])        
     runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPointSetNormalEstimation(inputModelNode, outputModelNode, orientatedGlyphs, int(mode), int(numberOfNeighbors), float(radius), int(kNearestNeighbors), int(graphType), True, True)
-    if runtimeLabel:
-      runtimeLabel.setText('vtkPointSetNormalEstimation computed in  %.2f' % runtime + ' s.')
+    runtimeLabel.setText('vtkPointSetNormalEstimation computed in  %.2f' % runtime + ' s.')
     return True
    
-  def vtkPolyDataNormals(self, inputModelNode, featureAngle, splitting, consistency, autoOrientNormals, computePointNormals, computeCellNormals, flipNormals, nonManifoldTraversal, runtimeLabel = None):
+  def vtkPolyDataNormals(self, inputModelNode, featureAngle, splitting, consistency, autoOrientNormals, computePointNormals, computeCellNormals, flipNormals, nonManifoldTraversal, runtimeLabel):
     outputModelNode = slicer.util.getNode('ComputedNormals')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedNormals', [0, 0, 1])  
@@ -479,27 +518,24 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     if not orientatedGlyphs:
       orientatedGlyphs = self.createModelNode('OrientatedGlyphs', [0, 1, 0])    
     runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPolyDataNormals(inputModelNode, outputModelNode, orientatedGlyphs, float(featureAngle), splitting, consistency, autoOrientNormals, computePointNormals, computeCellNormals, flipNormals, nonManifoldTraversal, True, True)
-    if runtimeLabel:
-      runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
+    runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
     return True
    
-  def vtkDelaunay3D(self, inputModelNode, alpha, tolerance, offset, boudingTriangulation, runtimeLabel = None):
+  def vtkDelaunay3D(self, inputModelNode, alpha, tolerance, offset, boudingTriangulation, runtimeLabel):
     outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
     runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkDelaunay3D(inputModelNode, outputModelNode, float(alpha), float(tolerance), float(offset), boudingTriangulation, True)
-    if runtimeLabel:
-      runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
+    runtimeLabel.setText('vtkDelaunay3D computed in %.2f' % runtime + ' s.')
     return True
 
-  def vtkPoissionReconstruction(self, depth = 8, scale = 1.25, solverDivide = 8, isoDivide = 8, samplesPerNode = 1.0, confidence = 0, verbose = 0, runtimeLabel = None):
+  def vtkPoissionReconstruction(self, depth, scale, solverDivide, isoDivide, samplesPerNode, confidence, verbose, runtimeLabel):
     inputModelNode = slicer.util.getNode('ComputedNormals')
     outputModelNode = slicer.util.getNode('ComputedSurface')
     if not outputModelNode:
       outputModelNode = self.createModelNode('ComputedSurface', [1, 0, 0])
     runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPoissionReconstruction(inputModelNode, outputModelNode, int(depth), float(scale), int(solverDivide), int(isoDivide), float(samplesPerNode), int(confidence), int(verbose), True)
-    if runtimeLabel:
-      runtimeLabel.setText('vtkPoissionReconstruction computed in %.2f' % runtime + ' s.')
+    runtimeLabel.setText('vtkPoissionReconstruction computed in %.2f' % runtime + ' s.')
     return True
     
   def setModelVisibility(self, name, visible):
@@ -519,25 +555,3 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
     modelNode.SetAndObserveDisplayNodeID(modelDisplay.GetID())
     scene.AddNode(modelNode)  
     return modelNode
-    
-############################################################ PointSetProcessingPyTest    
-class PointSetProcessingPyTest(ScriptedLoadableModuleTest):
-
-  def setUp(self):
-    slicer.mrmlScene.Clear(0)
-    layoutManager = slicer.app.layoutManager()
-    layoutManager.setLayout(4)
-    
-  def runTest(self):
-    self.setUp()
-    self.test_Module()
-
-  def test_Module(self):
-    self.delayDisplay("Testing module")
-    pointSetProcessingPyModuleDirectoryPath = slicer.modules.pointsetprocessingpy.path.replace("PointSetProcessingPy.py", "")
-    slicer.util.loadModel(pointSetProcessingPyModuleDirectoryPath + '../Data/SpherePoints.vtp', 'SpherePoints')
-    inputModelNode = slicer.util.getNode('SpherePoints')
-    logic = PointSetProcessingPyLogic()
-    self.assertTrue(logic.computeNormals(inputModelNode))        
-    self.assertTrue(logic.computeSurface(inputModelNode))        
-    self.delayDisplay('Testing module passed!')    
