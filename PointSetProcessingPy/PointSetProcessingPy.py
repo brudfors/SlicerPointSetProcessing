@@ -122,11 +122,11 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.normalsTabWidget = qt.QTabWidget()
     normalsFormLayout.addRow(self.normalsTabWidget)
 
-    # vtkPointSetNormalEstimation
+    # vtkPointSetNormalEstimationAndOrientation
     self.vtkPointSetNormalEstimationWidget = qt.QWidget()
     vtkPointSetNormalEstimationFormLayout = qt.QFormLayout(self.vtkPointSetNormalEstimationWidget)
     normalsFormLayout.addRow(self.vtkPointSetNormalEstimationWidget)
-    self.normalsTabWidget.addTab(self.vtkPointSetNormalEstimationWidget, "vtkPointSetNormalEstimation")    
+    self.normalsTabWidget.addTab(self.vtkPointSetNormalEstimationWidget, "vtkPointSetNormalEstimationAndOrientation")    
         
     self.modeTypeComboBox = qt.QComboBox()
     self.modeTypeComboBox.addItem('Fixed')  
@@ -148,7 +148,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.radiusSlider = ctk.ctkSliderWidget()
     self.radiusSlider.setDecimals(2)
     self.radiusSlider.singleStep = 0.01
-    self.radiusSlider.minimum = 1
+    self.radiusSlider.minimum = 0
     self.radiusSlider.maximum = 10
     self.radiusSlider.value = 1.0
     self.radiusSlider.setToolTip('')
@@ -165,7 +165,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.knnSlider.setDecimals(0)
     self.knnSlider.singleStep = 1
     self.knnSlider.minimum = 1
-    self.knnSlider.maximum = 20
+    self.knnSlider.maximum = 100
     self.knnSlider.value = 5
     self.knnSlider.setToolTip('')
     vtkPointSetNormalEstimationFormLayout.addRow('K-Nearest Neighbors: ', self.knnSlider)
@@ -495,7 +495,7 @@ class PointSetProcessingPyLogic(ScriptedLoadableModuleLogic):
   
   def vtkPointSetOutlierRemoval(self, inputModelNode, percentToRemove, runtimeLabel):
     runtime = slicer.modules.pointsetprocessingcpp.logic().Apply_vtkPointSetOutlierRemoval(inputModelNode, float(percentToRemove), True)
-    runtimeLabel.setText('vtkPolyDataNormals computed in  %.2f' % runtime + ' s.')
+    runtimeLabel.setText('vtkPointSetOutlierRemoval computed in  %.2f' % runtime + ' s.')
     
   def vtkPointSetNormalEstimation(self, inputModelNode, mode, numberOfNeighbors, radius, kNearestNeighbors, graphType, runtimeLabel):
     outputModelNode = slicer.util.getNode('ComputedNormals')

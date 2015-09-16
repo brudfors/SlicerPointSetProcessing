@@ -70,7 +70,7 @@ private:
   bool HasPointNormals(vtkMRMLModelNode* input, bool verbose = false);
   bool HasCellNormals(vtkMRMLModelNode* input, bool verbose = false);
   bool HasPoints(vtkMRMLModelNode* input, bool verbose = false);
-  void OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, double scaleFactor = 0.4, double tolerance = 0.1);
+  void OutputGlyphs3D(vtkPolyData* inputPolyData, vtkMRMLModelNode* ouputModelNode, double scaleFactor = 4.0, double tolerance = 0.1);
 
   vtkSlicerPointSetProcessingCppLogic(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented
   void operator=(const vtkSlicerPointSetProcessingCppLogic&); // Not implemented

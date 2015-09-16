@@ -18,6 +18,9 @@ The surface reconstruction uses either Possion surface reconstruction [5, 6] or 
 6. **SlicerSurfaceFromUnorganizedPoints** - Build the SlicerSurfaceFromUnorganizedPoints module after adding: the PoissonReconstruction library and includes; the PointSetProcessing library and includes; and the vtkInfovisBoostGraphAlgorithms library, in CMake.
 
 ## TODO
+* Add smoothing
+* Show/hide input points
+* Set glyph size
 * If there is interest: Reset to default, save params in Slicer.ini, calculate in separate thread
 
 ## Bibliography
