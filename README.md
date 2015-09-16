@@ -1,5 +1,5 @@
-# SlicerSurfaceFromUnorganizedPoints
-SlicerSurfaceFromUnorganizedPoints is a module for 3D Slicer which can compute normals and reconstruct surfaces from sets of unorganized points. 
+# SlicerPointSetProcessing
+SlicerPointSetProcessing is a module for 3D Slicer which can perform common point-set processing tasks.
 
 ### Downsampling
 Downsampling of the input point set is performed using [1].
@@ -18,7 +18,6 @@ The surface reconstruction uses either Possion surface reconstruction [5, 6] or 
 6. **SlicerSurfaceFromUnorganizedPoints** - Build the SlicerSurfaceFromUnorganizedPoints module after adding: the PoissonReconstruction library and includes; the PointSetProcessing library and includes; and the vtkInfovisBoostGraphAlgorithms library, in CMake.
 
 ## TODO
-* Rename to SurfaceFromUnorganizedPoints
 * If there is interest: Reset to default, save params in Slicer.ini, calculate in separate thread
 
 ## Bibliography
