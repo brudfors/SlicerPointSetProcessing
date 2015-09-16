@@ -149,7 +149,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.radiusSlider.setDecimals(2)
     self.radiusSlider.singleStep = 0.01
     self.radiusSlider.minimum = 0
-    self.radiusSlider.maximum = 10
+    self.radiusSlider.maximum = 50
     self.radiusSlider.value = 1.0
     self.radiusSlider.setToolTip('')
     vtkPointSetNormalEstimationFormLayout.addRow('Radius: ', self.radiusSlider)
