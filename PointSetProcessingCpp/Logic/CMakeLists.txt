@@ -16,9 +16,9 @@ find_path(POINTSETPROCESSING_INCLUDE_DIR vtkPointSetNormalEstimation.h
           DOC "Path to PointSetProcessing include directory." )                        
 
 # PoissonReconstruction
-find_path(POISSONRECONSTRUCTION_BINARY_DIR vtkPoissonReconstructionConfigure.h
+find_path(POISSONRECONSTRUCTION_BUILD_DIR vtkPoissonReconstructionConfigure.h
           PATHS "H:/_B/VTK-filters/PoissonReconstructionR"
-          DOC "Path to PoissonReconstruction binary directory." )
+          DOC "Path to PoissonReconstruction build directory." )
 find_path(POISSONRECONSTRUCTION_INCLUDE_DIR vtkPoissonReconstruction.h
           PATHS "H:/_S/VTK-filters/PoissonReconstruction/source"
           DOC "Path to PoissonReconstruction include directory." )
@@ -37,8 +37,8 @@ elseif (NOT POINTSETPROCESSING_INCLUDE_DIR)
   message( FATAL_ERROR "PointSetProcessing include directory not found." )          
 elseif (NOT POISSONRECONSTRUCTION_LIBRARY)
   message( FATAL_ERROR "PoissonReconstruction library not found." )
-elseif (NOT POISSONRECONSTRUCTION_BINARY_DIR)
-  message( FATAL_ERROR "PoissonReconstruction binary directory not found." )
+elseif (NOT POISSONRECONSTRUCTION_BUILD_DIR)
+  message( FATAL_ERROR "PoissonReconstruction build directory not found." )
 elseif (NOT POISSONRECONSTRUCTION_INCLUDE_DIR)
   message( FATAL_ERROR "PoissonReconstruction include directory not found." )
 elseif (NOT INFOVISBOOSTGRAPH_ALGORITHMS)
@@ -48,7 +48,7 @@ endif()
 set(${KIT}_INCLUDE_DIRECTORIES
   "${POINTSETPROCESSING_INCLUDE_DIR}"
   "${POISSONRECONSTRUCTION_INCLUDE_DIR}"
-  "${POISSONRECONSTRUCTION_BINARY_DIR}"
+  "${POISSONRECONSTRUCTION_BUILD_DIR}"
   )
 
 set(${KIT}_SRCS
