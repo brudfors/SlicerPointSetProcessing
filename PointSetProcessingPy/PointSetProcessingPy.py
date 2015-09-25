@@ -269,7 +269,7 @@ class PointSetProcessingPyWidget(ScriptedLoadableModuleWidget):
     self.depthSlider.setDecimals(0)
     self.depthSlider.singleStep = 1
     self.depthSlider.minimum = 1
-    self.depthSlider.maximum = 20
+    self.depthSlider.maximum = 14
     self.depthSlider.value = 8
     self.depthSlider.setToolTip('This integer controls the reconstruction depth; the maximum depth of the tree that will be used for surface reconstruction. Running at depth d corresponds to solving on a voxel grid whose resolution is no larger than 2^d x 2^d x 2^d. Note that since the reconstructor adapts the octree to the sampling density, the specified reconstruction depth is only an upper bound.')
     vtkPoissionReconstructionFormLayout.addRow('Depth: ', self.depthSlider)
