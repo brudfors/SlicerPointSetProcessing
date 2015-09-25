@@ -1,0 +1,116 @@
+diff --git a/SuperBuild.cmake b/SuperBuild.cmake
+index f4d145c..1dccb19 100644
+--- a/SuperBuild.cmake
++++ b/SuperBuild.cmake
+@@ -364,6 +364,11 @@ ExternalProject_Add(${proj}
+     -DSlicer_APPLICATIONS_DIR:PATH=${Slicer_APPLICATIONS_DIR}
+     -DSlicer_EXTENSION_SOURCE_DIRS:STRING=${Slicer_EXTENSION_SOURCE_DIRS}
+     ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
++    -DSlicer_BUILD_WIN32_CONSOLE:BOOL=ON
++    -D${PROJECT_NAME}_PROJECT_NAME:STRING=${${PROJECT_NAME}_PROJECT_NAME}
++    -D${PROJECT_NAME}_PROJECT_VERSION:STRING=${${PROJECT_NAME}_PROJECT_VERSION}
++    -D${PROJECT_NAME}_PROJECT_SPLASH:FILEPATH=${${PROJECT_NAME}_PROJECT_SPLASH}
++    -D${PROJECT_NAME}_PROJECT_HOME:STRING=${${PROJECT_NAME}_PROJECT_HOME}
+   INSTALL_COMMAND ""
+   )
+ 
+diff --git a/SuperBuild/External_CTK.cmake b/SuperBuild/External_CTK.cmake
+index c066bb3..42f6d76 100644
+--- a/SuperBuild/External_CTK.cmake
++++ b/SuperBuild/External_CTK.cmake
+@@ -96,6 +96,10 @@ if(NOT DEFINED CTK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+     )
+   set(CTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+ 
++   # [${PROJECT_NAME}] Patch CTK.
++   find_package(CMakeAll REQUIRED HINTS ${BiiGTK_CMakeAll_DIR})
++   cma_patch_project(${proj} ${BiiGTK_PATCH_CTK})
++
+   #-----------------------------------------------------------------------------
+   # Launcher setting specific to build tree
+ 
+diff --git a/SuperBuild/External_DCMTK.cmake b/SuperBuild/External_DCMTK.cmake
+index 4ea277e..eb95ea4 100644
+--- a/SuperBuild/External_DCMTK.cmake
++++ b/SuperBuild/External_DCMTK.cmake
+@@ -8,7 +8,8 @@ set(${proj}_DEPENDENCIES "zlib")
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(DCMTK_DIR CACHE)
++  #unset(DCMTK_DIR CACHE)
++  list(APPEND CMAKE_MODULE_PATH "${ITK_SOURCE_DIR}/Modules/ThirdParty/DCMTK/CMake")
+   find_package(DCMTK REQUIRED)
+ endif()
+ 
+diff --git a/SuperBuild/External_ITKv4.cmake b/SuperBuild/External_ITKv4.cmake
+index 30a3f1e..8f9abd4 100644
+--- a/SuperBuild/External_ITKv4.cmake
++++ b/SuperBuild/External_ITKv4.cmake
+@@ -11,7 +11,7 @@ endif()
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(ITK_DIR CACHE)
++  #unset(ITK_DIR CACHE)
+   find_package(ITK 4.6 REQUIRED NO_MODULE)
+ endif()
+ 
+diff --git a/SuperBuild/External_OpenIGTLink.cmake b/SuperBuild/External_OpenIGTLink.cmake
+index 28504bc..08fa276 100644
+--- a/SuperBuild/External_OpenIGTLink.cmake
++++ b/SuperBuild/External_OpenIGTLink.cmake
+@@ -8,7 +8,7 @@ set(${proj}_DEPENDENCIES "")
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(OpenIGTLink_DIR CACHE)
++  #unset(OpenIGTLink_DIR CACHE)
+   find_package(OpenIGTLink REQUIRED NO_MODULE)
+ endif()
+ 
+diff --git a/SuperBuild/External_VTKv6.cmake b/SuperBuild/External_VTKv6.cmake
+index 7dc5640..3a989fa 100644
+--- a/SuperBuild/External_VTKv6.cmake
++++ b/SuperBuild/External_VTKv6.cmake
+@@ -11,8 +11,8 @@ endif()
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(VTK_DIR CACHE)
+-  unset(VTK_SOURCE_DIR CACHE)
++  #unset(VTK_DIR CACHE)
++  #unset(VTK_SOURCE_DIR CACHE)
+   find_package(VTK REQUIRED NO_MODULE)
+ endif()
+ 
+diff --git a/SuperBuild/External_python.cmake b/SuperBuild/External_python.cmake
+index e7a6bc3..dcd801f 100644
+--- a/SuperBuild/External_python.cmake
++++ b/SuperBuild/External_python.cmake
+@@ -21,9 +21,9 @@ endif()
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(PYTHON_INCLUDE_DIR CACHE)
+-  unset(PYTHON_LIBRARY CACHE)
+-  unset(PYTHON_EXECUTABLE CACHE)
++  #unset(PYTHON_INCLUDE_DIR CACHE)
++  #unset(PYTHON_LIBRARY CACHE)
++  #unset(PYTHON_EXECUTABLE CACHE)
+   find_package(PythonLibs REQUIRED)
+   find_package(PythonInterp REQUIRED)
+   set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIRS})
+diff --git a/SuperBuild/External_zlib.cmake b/SuperBuild/External_zlib.cmake
+index 2155e58..160e049 100644
+--- a/SuperBuild/External_zlib.cmake
++++ b/SuperBuild/External_zlib.cmake
+@@ -8,7 +8,7 @@ set(${proj}_DEPENDENCIES "")
+ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
+ 
+ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+-  unset(zlib_DIR CACHE)
++  #unset(zlib_DIR CACHE)
+   find_package(ZLIB REQUIRED)
+   set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS})
+   set(ZLIB_LIBRARY ${ZLIB_LIBRARIES})
