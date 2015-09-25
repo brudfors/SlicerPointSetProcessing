@@ -5,7 +5,7 @@ project(SlicerPointSetProcessing)
 #-----------------------------------------------------------------------------
 # Extension meta-information
 set(EXTENSION_HOMEPAGE "http://www.example.com/Slicer/Extensions/PointSetProcessing")
-set(EXTENSION_CATEGORY "Filtering")
+set(EXTENSION_CATEGORY "Surface Models")
 set(EXTENSION_CONTRIBUTORS "Mikael Brudfors (brudfors@gmail.com)")
 set(EXTENSION_DESCRIPTION "Performs point set processing in Slicer.")
 set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/PointSetProcessing.png")
