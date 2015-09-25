@@ -1,8 +1,11 @@
 # SlicerPointSetProcessing
-SlicerPointSetProcessing is a module for 3D Slicer which can perform common point-set processing tasks.
+SlicerPointSetProcessing is a module for 3D Slicer which can perform common point-set processing tasks such as outlier removal, normals estimation and surface reconstruction, using various methods.
 
 ### Downsampling
 Downsampling of the input point set is performed using [1].
+
+### Outlier removal
+Outliers removal from the input point set is performed using [3].
 
 ### Estimate Normals
 In order to perform the Poisson surface reconstruction, the normals of the point set has to be approximated. This can be done using either [2] or [3,4]. For the reconstruction mehod based on Delaunay triangulation, this is not necessary.
@@ -15,7 +18,7 @@ The surface reconstruction uses either Possion surface reconstruction [5, 6] or 
 2. **vtkInfoVisBoost** - Download the latest version of Boost from here: http://www.boost.org/users/history/version_1_59_0.html, and extract to a folder of your choice (BOOST_ROOT). Open CMake and set the build directory to the VTK-build folder located in your 3D Slicer build. Add an entry called BOOST_ROOT, enable vtkInfoVisBoost and vtkInfoVisBoostGraphAlgorithms, then press Generate. Open the Slicer.sln located in the top directory of your Slicer build and build Slicer again.
 4. **PoissonReconstruction** - Build the PoissonReconstruction library located here: https://github.com/daviddoria/PoissonReconstruction, and link it with the VTK-build located in your 3D Slicer build folder.
 5. **PointSetProcessing** - Build the PointSetProcessing library located here: https://github.com/daviddoria/PointSetProcessing, and link it with the VTK-build located in your 3D Slicer build folder.
-6. **SlicerSurfaceFromUnorganizedPoints** - Build the SlicerSurfaceFromUnorganizedPoints module after adding: the PoissonReconstruction library and includes; the PointSetProcessing library and includes; and the vtkInfovisBoostGraphAlgorithms library, in CMake.
+6. **SlicerPointSetProcessing** - Build the SlicerPointSetProcessing module after adding: the PoissonReconstruction library, build folder and includes; the PointSetProcessing library and includes; and the vtkInfovisBoostGraphAlgorithms library, in CMake. Make sure as well to add the directory containing vtkPoissonReconstruction.dll to your Windows path.
 
 ## TODO
 * Add smoothing
