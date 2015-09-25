@@ -18,6 +18,10 @@ option(SuperBuild_BUILD_PACKAGING "Support for CPack packaging" ON)
 set(USE_External_Slicer_DIR "" CACHE PATH "Slicer Build directory")
 #set(SuperBuild_VTK_DIR ${SuperBuild_Slicer_DIR} CACHE PATH "Slicer Build directory" FORCE)
 set(USE_External_BOOST_ROOT "" CACHE PATH "Boost Root directory")
+set(USE_External_PointSetProcessing_BIN_DIR "" CACHE PATH "PointSetProcessing Build directory")
+set(USE_External_PointSetProcessing_SRC_DIR "" CACHE PATH "PointSetProcessing Source directory")
+set(USE_External_PoissonReconstruction_BIN_DIR "" CACHE PATH "Boost PoissonReconstruction Build directory")
+set(USE_External_PoissonReconstruction_SRC_DIR "" CACHE PATH "Boost PoissonReconstruction Source directory")
 
 # version
 set(SuperBuild_VERSION_MAJOR 1)
