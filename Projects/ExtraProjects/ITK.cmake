@@ -1,0 +1,82 @@
+# Author: Ali Uneri
+# Date: 2012-10-28
+
+set(EP_OPTION_NAME "USE_${EP_NAME}")
+set(EP_REQUIRED_PROJECTS Git)
+set(EP_PATCH "${CMAKE_CURRENT_LIST_DIR}/${EP_NAME}.patch")
+set(EP_OPTION_DESCRIPTION "Insight Segmentation and Registration Toolkit")
+
+cma_list(APPEND EP_REQUIRED_PROJECTS CUDA IF USE_CUDA)
+cma_list(APPEND EP_REQUIRED_PROJECTS DCMTK IF USE_DCMTK)
+cma_list(APPEND EP_REQUIRED_PROJECTS VTK IF USE_VTK)
+cma_list(APPEND EP_REQUIRED_PROJECTS zlib IF USE_zlib)
+
+if(USE_Slicer)
+  set(EP_URL "git://github.com/Slicer/ITK.git")
+  set(EP_VERSION "56fae278ad0ae805da4f4dbea5a4b9979cf4262c")
+else()
+  set(EP_URL "git://itk.org/ITK.git")
+  set(EP_VERSION "v4.6.1")
+endif()
+
+cma_envvar(@LIBRARYPATH@ PREPEND "@BINARY_DIR@/@LIBDIR@/@INTDIR@")
+
+cma_end_definition()
+# -----------------------------------------------------------------------------
+
+set(EP_CMAKE_ARGS
+  -DBUILD_EXAMPLES:BOOL=OFF
+  -DBUILD_TESTING:BOOL=OFF
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DITK_USE_GPU:BOOL=${USE_CUDA}
+  -DITK_USE_SYSTEM_DCMTK:BOOL=${USE_DCMTK}
+  -DITKV3_COMPATIBILITY:BOOL=OFF
+  -DModule_ITKIODCMTK:BOOL=${USE_DCMTK}
+  -DModule_ITKReview:BOOL=ON
+  -DModule_ITKVtkGlue:BOOL=${USE_VTK})
+
+if(USE_DCMTK)
+  cmake_minimum_required(VERSION 3.0)
+  list(APPEND EP_CMAKE_ARGS -DDCMTK_DIR:PATH=${${PROJECT_NAME}_DCMTK_DIR})
+endif()
+if(USE_SimpleITK OR USE_Slicer)
+  list(APPEND EP_CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
+else()
+  list(APPEND EP_CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=OFF)
+endif()
+if(USE_VTK)
+  list(APPEND EP_CMAKE_ARGS -DVTK_DIR:PATH=${${PROJECT_NAME}_VTK_DIR})
+endif()
+if(USE_zlib)
+  if(NOT USE_PLUS)
+    list(APPEND EP_CMAKE_ARGS
+      -DZLIB_ROOT:PATH=${${PROJECT_NAME}_ZLIB_ROOT}
+      -DZLIB_INCLUDE_DIR:PATH=${${PROJECT_NAME}_ZLIB_INCLUDE_DIR}
+      -DZLIB_LIBRARY:FILEPATH=${${PROJECT_NAME}_ZLIB_LIBRARY}
+      -DITK_USE_SYSTEM_ZLIB:BOOL=${USE_zlib})
+  endif()
+  list(APPEND EP_CMAKE_ARGS
+      -DITK_USE_SYSTEM_ZLIB:BOOL=OFF)
+endif()
+
+ExternalProject_Add(${EP_NAME}
+  DEPENDS ${EP_REQUIRED_PROJECTS}
+  # download
+  GIT_REPOSITORY ${EP_URL}
+  GIT_TAG ${EP_VERSION}
+  # patch
+  # update
+  UPDATE_COMMAND ""
+  # configure
+  SOURCE_DIR ${PROJECT_BINARY_DIR}/${EP_NAME}
+  CMAKE_ARGS ${EP_CMAKE_ARGS}
+  # build
+  BINARY_DIR ${PROJECT_BINARY_DIR}/${EP_NAME}-build
+  # install
+  INSTALL_COMMAND ""
+  # test
+  )
+
+set(${PROJECT_NAME}_${EP_NAME}_DIR "${PROJECT_BINARY_DIR}/${EP_NAME}-build" CACHE INTERNAL "")
