@@ -2,7 +2,14 @@
 # Date: 2015-09-22
 
 set(EP_OPTION_NAME "USE_${EP_NAME}")
-set(EP_REQUIRED_PROJECTS Git VTK)
+set(EP_REQUIRED_PROJECTS Git)
+
+if(EXISTS "${USE_External_Slicer_DIR}" AND IS_DIRECTORY "${USE_External_Slicer_DIR}")
+else()
+  list(APPEND EP_REQUIRED_PROJECTS
+       VTK)
+endif()
+
 set(EP_URL "https://github.com/daviddoria/PoissonReconstruction.git")
 set(EP_GIT_TAG "master")
 set(EP_OPTION_DESCRIPTION "${EP_NAME} Project")

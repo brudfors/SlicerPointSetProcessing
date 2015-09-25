@@ -2,7 +2,20 @@
 # Date: 2015-09-22
 
 set(EP_OPTION_NAME "USE_${EP_NAME}")
-set(EP_REQUIRED_PROJECTS Git VTK Boost)
+set(EP_REQUIRED_PROJECTS Git)
+
+if(EXISTS "${USE_External_Slicer_DIR}" AND IS_DIRECTORY "${USE_External_Slicer_DIR}")
+else()
+  list(APPEND EP_REQUIRED_PROJECTS
+       VTK)
+endif()
+
+if(EXISTS "${USE_External_BOOST_ROOT}" AND IS_DIRECTORY "${USE_External_BOOST_ROOT}")
+else()
+  list(APPEND EP_REQUIRED_PROJECTS
+       Boost)
+endif()
+
 set(EP_URL "git://github.com/daviddoria/PointSetProcessing.git")
 set(EP_GIT_TAG "master")
 set(EP_OPTION_DESCRIPTION "${EP_NAME} Project")
