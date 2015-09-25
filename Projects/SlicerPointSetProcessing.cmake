@@ -2,7 +2,7 @@
 # Date: 2015-09-22
 
 set(EP_OPTION_NAME "USE_${EP_NAME}")
-set(EP_REQUIRED_PROJECTS Boost Slicer PoissonReconstruction PointSetProcessing)
+set(EP_REQUIRED_PROJECTS Slicer PoissonReconstruction PointSetProcessing)
 set(EP_OPTION_DESCRIPTION "${EP_NAME} Project")
 set(EP_OPTION_DEFAULT ON)
 
